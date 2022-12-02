@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "readObj.h"
 
 void readobj(const std::string objfilename, std::vector<glm::vec4>& vertex)

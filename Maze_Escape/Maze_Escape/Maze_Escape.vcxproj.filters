@@ -5,15 +5,23 @@
       <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
       <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
     </Filter>
-    <Filter Include="헤더 파일">
-      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
-      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
-    </Filter>
     <Filter Include="Shader">
       <UniqueIdentifier>{df91c90e-c878-4153-b9ae-8b4159157940}</UniqueIdentifier>
     </Filter>
     <Filter Include="소스 파일\ReadObj">
       <UniqueIdentifier>{a95051b0-4614-443b-973e-e3128ee08ed4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\00.GameObject">
+      <UniqueIdentifier>{f04cd77b-29ad-4da2-9ad2-68f67561b7e2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\00.GameObject\00.Player">
+      <UniqueIdentifier>{134ec899-1200-4839-8dbf-ecf09bef3b65}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\99.Header">
+      <UniqueIdentifier>{199fd925-926e-432e-9e91-6dae7514c6ae}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\98.Default">
+      <UniqueIdentifier>{195618d4-7bb3-46f8-8167-304ae42bda26}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -31,10 +39,31 @@
     <ClCompile Include="readobj.cpp">
       <Filter>소스 파일\ReadObj</Filter>
     </ClCompile>
+    <ClCompile Include="CGameObject.cpp">
+      <Filter>소스 파일\00.GameObject</Filter>
+    </ClCompile>
+    <ClCompile Include="CPlayer.cpp">
+      <Filter>소스 파일\00.GameObject\00.Player</Filter>
+    </ClCompile>
+    <ClCompile Include="stdafx.cpp">
+      <Filter>소스 파일\98.Default</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="readobj.h">
       <Filter>소스 파일\ReadObj</Filter>
+    </ClInclude>
+    <ClInclude Include="CGameObject.h">
+      <Filter>소스 파일\00.GameObject</Filter>
+    </ClInclude>
+    <ClInclude Include="CPlayer.h">
+      <Filter>소스 파일\00.GameObject\00.Player</Filter>
+    </ClInclude>
+    <ClInclude Include="stdafx.h">
+      <Filter>소스 파일\99.Header</Filter>
+    </ClInclude>
+    <ClInclude Include="extern.h">
+      <Filter>소스 파일\99.Header</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

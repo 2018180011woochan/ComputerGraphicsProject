@@ -1,17 +1,9 @@
-#include <iostream>
-#include <gl/glew.h>
-#include <gl/freeglut.h>
-#include <gl/freeglut_ext.h>
-#include <fstream>
-#include <vector>
-#include <string>
-#include <gl/glm/glm.hpp>
-#include <gl/glm/ext.hpp>
-#include <gl/glm/gtc/matrix_transform.hpp>
+ï»¿#include "stdafx.h"
 
 #include <random>
-
 #include "readobj.h"
+#include "CGameObject.h"
+#include "CPlayer.h"
 
 using namespace std;
 
@@ -19,8 +11,16 @@ random_device rd;
 default_random_engine dr(rd());
 uniform_real_distribution<> uid(0.1, 2.5);
 uniform_real_distribution<> randColor(0.0, 1.0);
-float R_x = uid(dr);
-float R_z = uid(dr);
+
+vector<glm::vec4> ObjVertexVal[2];
+float randomY[25][25];
+float RandomColor[25][25];
+
+GLuint VAO[2], VBO[3];
+GLuint shaderID[2];
+GLuint qobjshader;
+GLuint vertexshader;
+GLuint fragmentshader;
 
 void initbuffer();
 void make_vertexShaders();
@@ -45,28 +45,13 @@ void PlayerDown();
 void PlayerLeft();
 void PlayerRight();
 
-vector<glm::vec4> ObjVertexVal[2];
-float randomY[25][25];
-float RandomColor[25][25];
-
-GLuint VAO[2], VBO[3];
-GLuint shaderID[2];
-GLuint qobjshader;
-GLuint vertexshader;
-GLuint fragmentshader;
-
 int width, height;
-
-bool Projchk = true;
 
 int MoveSpeed = 10;
 int curWidth = 0;
 int curHeight = 0;
 
-bool PillarMove = false;
-bool isLowerPillar = false;
 bool MoveDir = false;
-bool MakePlayer = false;
 int moveCnt = 0;
 
 int WidthInput, HeightInput;
@@ -104,6 +89,8 @@ struct Camera
 
 }CameraPos;
 
+CGameObject* _player;
+
 GLvoid Reshape(int Width, int Height)
 {
 	glViewport(0, 0, 1600, 900);
@@ -138,7 +125,7 @@ void make_vertexShaders() {
 	glGetShaderiv(vertexshader, GL_COMPILE_STATUS, &result);
 	if (!result) {
 		glGetShaderInfoLog(vertexshader, 512, NULL, errorlog);
-		cerr << "Error:vertexshader ÄÄÆÄÀÏ ½ÇÆÐ" << errorlog << endl;
+		cerr << "Error:vertexshader ì»´íŒŒì¼ ì‹¤íŒ¨" << errorlog << endl;
 	}
 
 }
@@ -156,7 +143,7 @@ void make_fragmentShaders() {
 	glGetShaderiv(fragmentshader, GL_COMPILE_STATUS, &result);
 	if (!result) {
 		glGetShaderInfoLog(fragmentshader, 512, NULL, errorlog);
-		cerr << "Error:fragmentshader ÄÄÆÄÀÏ ½ÇÆÐ" << errorlog << endl;
+		cerr << "Error:fragmentshader ì»´íŒŒì¼ ì‹¤íŒ¨" << errorlog << endl;
 	}
 
 }
@@ -208,6 +195,7 @@ char* filetobuf(const string name)
 	return addr;
 }
 
+glm::vec3 cameraPos;
 GLvoid ViewPort()
 {
 	glClearColor(0.2, 0.2, 0.2, 1.0f);
@@ -217,15 +205,15 @@ GLvoid ViewPort()
 	glUseProgram(shaderID[0]);
 
 	glViewport(0, 0, width, (height / 4) * 3);
-#pragma region ÀüÃ¼ Scene
-	glm::vec3 ObjCameraPos;
+
 	if (dlscld3)
-		ObjCameraPos = glm::vec3(CameraPos.C_x, CameraPos.C_y, CameraPos.C_z);
+		cameraPos = glm::vec3(CameraPos.C_x, CameraPos.C_y, CameraPos.C_z);
 	if (dlscld1)
-		ObjCameraPos = glm::vec3(PlayerX + TransList.X, 1.f, PlayerZ + TransList.Z);
+		cameraPos = glm::vec3(_player->_xPos, 1.f, _player->_zPos);
+
 	glm::mat4 CameraSpacePos = glm::mat4(1.0f);
 	CameraSpacePos = glm::rotate(CameraSpacePos, glm::radians(RotList.CameraY1), glm::vec3(0.0f, 1.0f, 0.0f));
-	glm::vec4 CameraPosDistance = glm::vec4(ObjCameraPos, 1);
+	glm::vec4 CameraPosDistance = glm::vec4(cameraPos, 1);
 	CameraPosDistance = CameraSpacePos * CameraPosDistance;
 	glm::vec3 CameraPosDir = glm::vec3(CameraPosDistance.x, CameraPosDistance.y, CameraPosDistance.z);
 	glm::vec3 ObjectCameraPicking = glm::vec3(0.0f, 0.0f, 0.0f);
@@ -248,27 +236,55 @@ GLvoid ViewPort()
 	glm::vec3 Crosspos = glm::normalize(glm::cross(Up_y, Cameradir));
 	glm::vec3 Cross = glm::cross(Cameradir, Crosspos);
 
-	if (Projchk)	// ¿ø±Ù Åõ¿µ
-	{
-		glm::mat4 S_proj = glm::mat4(1.0f);
-		S_proj = glm::perspective(glm::radians(45.0f), (float)width / height, 0.1f, 100.0f);
-		unsigned int ProjLocation = glGetUniformLocation(shaderID[0], "projectiontransform");
-		glUniformMatrix4fv(ProjLocation, 1, GL_FALSE, &S_proj[0][0]);
-	}
-	else			// Á÷°¢ Åõ¿µ
-	{
-		glm::mat4 S_ortho = glm::mat4(1.0f);
-		S_ortho = glm::ortho(-3.0f, 3.0f, -3.0f, 3.0f, 0.8f, 25.0f);
-		unsigned int OrthoLocation = glGetUniformLocation(shaderID[0], "projectiontransform");
-		glUniformMatrix4fv(OrthoLocation, 1, GL_FALSE, glm::value_ptr(S_ortho));
-	}
+	glm::mat4 S_proj = glm::mat4(1.0f);
+	S_proj = glm::perspective(glm::radians(45.0f), (float)width / height, 0.1f, 100.0f);
+	unsigned int ProjLocation = glGetUniformLocation(shaderID[0], "projectiontransform");
+	glUniformMatrix4fv(ProjLocation, 1, GL_FALSE, &S_proj[0][0]);
+
 
 	glm::mat4 S_View = glm::mat4(1.0f);
 	S_View = glm::lookAt(CameraPosDir, RotateobjSpacedir, Cross);
 	unsigned int ViewLocation = glGetUniformLocation(shaderID[0], "viewtransform");
-	glUniformMatrix4fv(ViewLocation, 1, GL_FALSE, glm::value_ptr(S_View)); //ºä
+	glUniformMatrix4fv(ViewLocation, 1, GL_FALSE, glm::value_ptr(S_View)); //ë·°
+
+
+//------------------------------camera---------------------------------------------
+	
+	//glm::vec3 ObjectCamerapos = glm::vec3(CameraPos.C_x - _player->_xPos, CameraPos.C_y + _player->_yPos, CameraPos.C_z - _player->_zPos);
+	//glm::vec3 ObjectCamerapos = glm::vec3(_player->_xPos, _player->_yPos, _player->_zPos);
+	//glm::mat4 CameraSpacepos = glm::mat4(1.0f);
+	//CameraSpacepos = glm::rotate(CameraSpacepos, glm::radians(160.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+	//glm::vec3 Cameraposdir = glm::vec3(CameraSpacepos * glm::vec4(ObjectCamerapos, 1));
+	//glm::vec3 ObjectCameraPicking = glm::vec3(_player->_xPos, _player->_yPos, _player->_zPos);
+	//glm::vec3 ObjectCameradir = Cameraposdir - ObjectCameraPicking;
+	//glm::vec3 Up_y = glm::vec3(0.0f, 1.0f, 0.0f);
+
+	//glm::mat4 CameraSpacedir = glm::mat4(1.0f);
+	//CameraSpacedir = glm::rotate(CameraSpacedir, glm::radians(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+	//glm::vec3 Cameradir = glm::vec3(CameraSpacedir * glm::vec4(-ObjectCameradir, 1));
+
+	//glm::vec3 Crosspos = glm::normalize(glm::cross(Up_y, glm::normalize(Cameradir)));
+	//glm::vec3 Cross = glm::cross(glm::normalize(Cameradir), Crosspos);
+
+	//glm::mat4 ObjView = glm::mat4(1.0f);
+	//ObjView = glm::lookAt(Cameraposdir, Cameradir + Cameraposdir, Cross);
+	//unsigned int ObjcameraViewLocation = glGetUniformLocation(shaderID[0], "viewtransform");
+	//glUniformMatrix4fv(ObjcameraViewLocation, 1, GL_FALSE, glm::value_ptr(ObjView));
+
+	//glm::vec3 CameraView;
+	//CameraView = glm::vec3(Cameraposdir);
+	//unsigned int ViewPositionLocation = glGetUniformLocation(shaderID[0], "camerapos");
+	//glUniform3fv(ViewPositionLocation, 1, glm::value_ptr(CameraView));
+
+	////--------ï¿½ï¿½ï¿½ï¿½
+	//glm::mat4 Proj = glm::mat4(1.0f);
+	//Proj = glm::perspective(glm::radians(60.0f), (float)width / height, 0.1f, 100.0f);
+	//unsigned int ModelProjLocation = glGetUniformLocation(shaderID[0], "projectionTransform");
+	//glUniformMatrix4fv(ModelProjLocation, 1, GL_FALSE, &Proj[0][0]);
+
 	drawscene();
-#pragma endregion
+
+
 
 	glViewport((width / 4) * 3, (height / 4) * 3, width / 4, height / 4);
 	glm::vec3 PlainCameraPos = glm::vec3(0.0f, 2.0f, 0.0f);
@@ -291,7 +307,7 @@ GLvoid drawscene()
 {
 	glUseProgram(shaderID[0]);
 
-	glBindVertexArray(VAO[0]);	// ¹Ù´Ú
+	glBindVertexArray(VAO[0]);	// ë°”ë‹¥
 	glm::mat4 Floor = glm::mat4(1.0f);
 	Floor = glm::scale(Floor, glm::vec3(0.5f * WidthInput, 1.f, 0.5f * HeightInput));
 	Floor = glm::translate(Floor, glm::vec3(0.0f, 0.0f, 0.0f));
@@ -310,7 +326,7 @@ GLvoid drawscene()
 	{
 		for (int j = 0; j < HeightInput; ++j)
 		{
-			glBindVertexArray(VAO[1]);	// ±âµÕ
+			glBindVertexArray(VAO[1]);	// ê¸°ë‘¥
 			glm::mat4 Pillar = glm::mat4(1.0f);
 			Pillar = glm::scale(Pillar, glm::vec3(0.5f, randomY[i][j], 0.5f));
 			Pillar = glm::translate(Pillar, glm::vec3(realStartX + i * 1.0f, TransList.Y, realStartZ + j * 1.0f));
@@ -325,18 +341,16 @@ GLvoid drawscene()
 	PlayerX = realStartX + 1.0f;
 	PlayerZ = realStartZ;
 
-	if (MakePlayer)
-	{
-		glBindVertexArray(VAO[2]);	// ÇÃ·¹ÀÌ¾î
-		glm::mat4 Player = glm::mat4(1.0f);
-		Player = glm::scale(Player, glm::vec3(0.5f, 0.3f, 0.5f));
-		Player = glm::translate(Player, glm::vec3(PlayerX + TransList.X, 0.f, PlayerZ + TransList.Z));
-		unsigned int ObjPlayerLocation = glGetUniformLocation(shaderID[1], "modeltransform");
-		glUniformMatrix4fv(ObjPlayerLocation, 1, GL_FALSE, glm::value_ptr(Player));
-		unsigned int ObjPlayerfragLocation = glGetUniformLocation(shaderID[1], "vColor");
-		glUniform3f(ObjPlayerfragLocation, 1.f, 0.f, 0.f);
-		glDrawArrays(GL_QUADS, 0, 24);
-	}
+	glBindVertexArray(VAO[2]);	// í”Œë ˆì´ì–´
+	glm::mat4 Player = glm::mat4(1.0f);
+	Player = glm::scale(Player, glm::vec3(0.2f, 0.3f, 0.2f));
+	Player = glm::translate(Player, glm::vec3(PlayerX + _player->GetPlayerXPos(), 0.f, PlayerZ + _player->GetPlayerZPos()));
+	unsigned int ObjPlayerLocation = glGetUniformLocation(shaderID[1], "modeltransform");
+	glUniformMatrix4fv(ObjPlayerLocation, 1, GL_FALSE, glm::value_ptr(Player));
+	unsigned int ObjPlayerfragLocation = glGetUniformLocation(shaderID[1], "vColor");
+	glUniform3f(ObjPlayerfragLocation, 1.f, 0.f, 0.f);
+	glDrawArrays(GL_QUADS, 0, 24);
+
 
 }
 
@@ -344,26 +358,29 @@ void initbuffer()
 {
 	glGenVertexArrays(2, VAO);
 
-	glBindVertexArray(VAO[0]);	// ¹Ù´Ú
+	glBindVertexArray(VAO[0]);	// ë°”ë‹¥
 	glGenBuffers(1, &VBO[1]);
 	glBindBuffer(GL_ARRAY_BUFFER, VBO[1]);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec4) * ObjVertexVal[0].size(), &ObjVertexVal[0][0], GL_STREAM_DRAW);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec4), (void*)0);
 	glEnableVertexAttribArray(0);
 
-	glBindVertexArray(VAO[1]);	// ±âµÕ
+	glBindVertexArray(VAO[1]);	// ê¸°ë‘¥
 	glGenBuffers(1, &VBO[2]);
 	glBindBuffer(GL_ARRAY_BUFFER, VBO[2]);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec4) * ObjVertexVal[1].size(), &ObjVertexVal[1][0], GL_STREAM_DRAW);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec4), (void*)0);
 	glEnableVertexAttribArray(0);
 
-	glBindVertexArray(VAO[2]);	// ÇÃ·¹ÀÌ¾î
+	glBindVertexArray(VAO[2]);	// í”Œë ˆì´ì–´
 	glGenBuffers(1, &VBO[3]);
 	glBindBuffer(GL_ARRAY_BUFFER, VBO[3]);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec4) * ObjVertexVal[1].size(), &ObjVertexVal[1][0], GL_STREAM_DRAW);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec4), (void*)0);
 	glEnableVertexAttribArray(0);
+
+	_player = new CPlayer();
+	MakeMaze();
 }
 
 void timer(int value)
@@ -371,32 +388,7 @@ void timer(int value)
 	if (TransList.Y >= 0.f)
 		TransList.Y -= 0.1f;
 
-	if (PillarMove)
-	{
-		for (int i = 0; i < WidthInput; ++i)
-		{
-			for (int j = 0; j < HeightInput; ++j)
-			{
-				if (randomY[i][j] == 0.f)
-					continue;
-				float RandomY = uid(dr);
-				randomY[i][j] = RandomY;
-			}
-		}
-	}
 
-	if (isLowerPillar)
-	{
-		for (int i = 0; i < WidthInput; ++i)
-		{
-			for (int j = 0; j < HeightInput; ++j)
-			{
-				if (randomY[i][j] == 0.0f)
-					continue;
-				randomY[i][j] = 0.3f;
-			}
-		}
-	}
 
 	glutPostRedisplay();
 	glutTimerFunc(MoveSpeed, timer, 1);
@@ -413,7 +405,7 @@ void MakeMaze()
 			break;
 		}
 
-		// ¹æÇâ Á¤ÇÏ±â
+		// ë°©í–¥ ì •í•˜ê¸°
 		if (MoveDir)
 		{
 			dir = rand() % 2;
@@ -424,13 +416,13 @@ void MakeMaze()
 			dir = rand() % 2 + 2;
 			MoveDir = true;
 		}
-		// Ä­¼ö Á¤ÇÏ±â
+		// ì¹¸ìˆ˜ ì •í•˜ê¸°
 		moveCnt = rand() % 7 + 2;
 
-		// »óÇÏ¶ó¸é
+		// ìƒí•˜ë¼ë©´
 		switch (dir)
 		{
-		case 0:		// ¿ì
+		case 0:		// ìš°
 			if (curHeight >= HeightInput - 1)
 			{
 				Left();
@@ -439,7 +431,7 @@ void MakeMaze()
 
 			Right();
 			break;
-		case 1:		// ÁÂ
+		case 1:		// ì¢Œ
 			if (curHeight <= 0)
 			{
 				Right();
@@ -447,7 +439,7 @@ void MakeMaze()
 			}
 			Left();
 			break;
-		case 2:		// »ó
+		case 2:		// ìƒ
 			if (curWidth <= 0)
 			{
 				Down();
@@ -455,7 +447,7 @@ void MakeMaze()
 			}
 			Up();
 			break;
-		case 3:		// ÇÏ
+		case 3:		// í•˜
 			if (curWidth >= WidthInput - 1)
 			{
 				Up();
@@ -531,60 +523,6 @@ void Right()
 GLvoid keyboard(unsigned char key, int x, int y)
 {
 	switch (key) {
-	case 'o':	// Á÷°¢Åõ¿µ
-		Projchk = false;
-		break;
-	case 'p':	// ¿ø±ÙÅõ¿µ
-		Projchk = true;
-		break;
-	case 'z':
-		CameraPos.C_z++;
-		break;
-	case 'Z':
-		CameraPos.C_z--;
-		break;
-	case 'm':
-		isLowerPillar = false;
-		MoveSpeed = 200;
-		PillarMove = true;
-		break;
-	case 'M':
-		isLowerPillar = false;
-		MoveSpeed = 200;
-		PillarMove = false;
-		break;
-	case 'y':
-		RotList.CameraY1++;
-		break;
-	case 'Y':
-		RotList.CameraY1--;
-		break;
-	case '+':
-		MoveSpeed--;
-		break;
-	case '-':
-		MoveSpeed++;
-		break;
-	case 'v':
-		MoveSpeed = 200;
-		PillarMove = false;
-		if (isLowerPillar)
-			PillarMove = true;
-		isLowerPillar = !isLowerPillar;
-		break;
-	case 'V':
-		MoveSpeed = 200;
-		PillarMove = false;
-		if (isLowerPillar)
-			PillarMove = true;
-		isLowerPillar = !isLowerPillar;
-		break;
-	case 'r':
-		MakeMaze();
-		break;
-	case 's':
-		MakePlayer = true;
-		break;
 	case '1':
 		dlscld1 = true;
 		dlscld3 = false;
@@ -592,51 +530,6 @@ GLvoid keyboard(unsigned char key, int x, int y)
 	case '3':
 		dlscld3 = true;
 		dlscld1 = false;
-		break;
-	case 'c':
-		dlscld3 = true;
-		dlscld1 = false;
-
-		MakePlayer = false;
-		MoveSpeed = 10;
-		isLowerPillar = false;
-		PillarMove = false;
-		RotList.CameraY1 = 0.f;
-		CameraPos.C_z = 11.0f;
-		Projchk = true;
-
-		PlayerXPos = 1;
-		PlayerZPos = 0;
-		PlayerX = 0.f;
-		PlayerZ = 0.f;
-		TransList.X = 0.f;
-		TransList.Y = 5.0f;
-		TransList.Z = 0.f;
-		curWidth = 0;
-		curHeight = 0;
-
-		cout << "°¡·Î : ";
-		cin >> WidthInput;
-		cout << "¼¼·Î : ";
-		cin >> HeightInput;
-
-		if (WidthInput < 5 || WidthInput>25 || HeightInput < 5 || HeightInput>25)
-		{
-			cout << "5~25°ªÀ» ÀÔ·ÂÇÏ¼¼¿ä\n";
-			cout << "°¡·Î : ";
-			cin >> WidthInput;
-			cout << "¼¼·Î : ";
-			cin >> HeightInput;
-		}
-		for (int i = 0; i < WidthInput; ++i)
-		{
-			for (int j = 0; j < HeightInput; ++j)
-			{
-				float RandomY = uid(dr);
-				randomY[i][j] = RandomY;
-				RandomColor[i][j] = randColor(dr);
-			}
-		}
 		break;
 	case 'q':
 		exit(0);
@@ -647,36 +540,36 @@ GLvoid keyboard(unsigned char key, int x, int y)
 
 void PlayerUp()
 {
-	if (randomY[PlayerXPos][PlayerZPos - 1] == 0.f)
+	//if (randomY[PlayerXPos][PlayerZPos - 1] == 0.f)
 	{
-		TransList.Z -= 1.f;
+		_player->SetPlayerZPos(_player->GetPlayerZPos() - 1.f);
 		PlayerZPos -= 1;
 	}
 }
 
 void PlayerDown()
 {
-	if (randomY[PlayerXPos][PlayerZPos + 1] == 0.f)
+	//if (randomY[PlayerXPos][PlayerZPos + 1] == 0.f)
 	{
-		TransList.Z += 1.f;
+		_player->SetPlayerZPos(_player->GetPlayerZPos() + 1.f);
 		PlayerZPos += 1;
 	}
 }
 
 void PlayerLeft()
 {
-	if (randomY[PlayerXPos - 1][PlayerZPos] == 0.f)
+	//if (randomY[PlayerXPos - 1][PlayerZPos] == 0.f)
 	{
-		TransList.X -= 1.f;
+		_player->SetPlayerXPos(_player->GetPlayerXPos() - 1.f);
 		PlayerXPos -= 1;
 	}
 }
 
 void PlayerRight()
 {
-	if (randomY[PlayerXPos + 1][PlayerZPos] == 0.f)
+	//if (randomY[PlayerXPos + 1][PlayerZPos] == 0.f)
 	{
-		TransList.X += 1.f;
+		_player->SetPlayerXPos(_player->GetPlayerXPos() + 1.f);
 		PlayerXPos += 1;
 	}
 }
@@ -684,25 +577,24 @@ void PlayerRight()
 void MySpecialKey(int Key, int X, int Y)
 {
 	switch (Key) {
-	case GLUT_KEY_LEFT:     //¿ÞÂÊ Å°
+	case GLUT_KEY_LEFT:     //ì™¼ìª½ í‚¤
 		PlayerLeft();
 		glutPostRedisplay();
 		break;
-	case GLUT_KEY_RIGHT:     //¿À¸¥ÂÊ Å°
+	case GLUT_KEY_RIGHT:     //ì˜¤ë¥¸ìª½ í‚¤
 		PlayerRight();
 		glutPostRedisplay();
 		break;
-	case GLUT_KEY_UP:      //À§ Å°
+	case GLUT_KEY_UP:      //ìœ„ í‚¤
 		PlayerUp();
 		glutPostRedisplay();
 		break;
-	case GLUT_KEY_DOWN:      //¾Æ·¡ Å°
+	case GLUT_KEY_DOWN:      //ì•„ëž˜ í‚¤
 		PlayerDown();
 		glutPostRedisplay();
 		break;
 	}
 }
-
 
 int main(int argc, char** argv)
 {
@@ -718,45 +610,40 @@ int main(int argc, char** argv)
 		cerr << "fail Initialize" << endl;
 
 	cout << "**********************************************************************************\n";
-	cout << "o/p Åõ¿µÀ» ¼±ÅÃÇÑ´Ù (Á÷°¢ Åõ¿µ / ¿ø±Ù Åõ¿µ\n";
-	cout << "z/Z ¿ø±Ù Åõ¿µ ½Ã zÃàÀ¸·Î ÀÌµ¿ÇÒ ¼ö ÀÖ°Ô ÇÑ´Ù\n";
-	cout << "m/M: À°¸éÃ¼µéÀÌ À§ ¾Æ·¡·Î ¿òÁ÷ÀÎ´Ù / ¸ØÃá´Ù\n";
-	cout << "y/Y: Ä«¸Þ¶ó°¡ ¹Ù´ÚÀÇ yÃàÀ» ±âÁØÀ¸·Î ¾ç/À½ ¹æÇâÀ¸·Î È¸ÀüÇÑ´Ù.\n";
-	cout << "r: ¹Ì·Î¸¦ Á¦ÀÛÇÑ´Ù\n";
-	cout << "v: À°¸éÃ¼µé ¿òÁ÷ÀÓÀÌ ¸ØÃß°í ³·Àº ³ôÀÌ·Î º¯ÇÑ´Ù, ´Ù½Ã ´©¸£¸é ¿òÁ÷ÀÓÀÌ ´Ù½Ã ½ÃÀÛµÈ´Ù\n";
-	cout << "s: ¹Ì·Î¿¡¼­ °´Ã¼°¡ ³ªÅ¸³­´Ù\n";
-	cout << "¡æ/¡ç/¡è/¡é: °´Ã¼¸¦ ¾Õ/µÚ/ÁÂ/¿ì ÀÌµ¿\n";
-	cout << "+/-: À°¸éÃ¼ ÀÌµ¿ÇÏ´Â ¼Óµµ Áõ°¡/°¨¼Ò\n";
-	cout << "1/3: Ä«¸Þ¶ó ½ÃÁ¡ 1ÀÎÄª/3ÀÎÄª º¯È¯\n";
-	cout << "c: ¸ðµç °ª ÃÊ±âÈ­\n";
-	cout << "q: ÇÁ·Î±×·¥ Á¾·á\n";
+	cout << "o/p íˆ¬ì˜ì„ ì„ íƒí•œë‹¤ (ì§ê° íˆ¬ì˜ / ì›ê·¼ íˆ¬ì˜\n";
+	cout << "z/Z ì›ê·¼ íˆ¬ì˜ ì‹œ zì¶•ìœ¼ë¡œ ì´ë™í•  ìˆ˜ ìžˆê²Œ í•œë‹¤\n";
+	cout << "m/M: ìœ¡ë©´ì²´ë“¤ì´ ìœ„ ì•„ëž˜ë¡œ ì›€ì§ì¸ë‹¤ / ë©ˆì¶˜ë‹¤\n";
+	cout << "y/Y: ì¹´ë©”ë¼ê°€ ë°”ë‹¥ì˜ yì¶•ì„ ê¸°ì¤€ìœ¼ë¡œ ì–‘/ìŒ ë°©í–¥ìœ¼ë¡œ íšŒì „í•œë‹¤.\n";
+	cout << "r: ë¯¸ë¡œë¥¼ ì œìž‘í•œë‹¤\n";
+	cout << "v: ìœ¡ë©´ì²´ë“¤ ì›€ì§ìž„ì´ ë©ˆì¶”ê³  ë‚®ì€ ë†’ì´ë¡œ ë³€í•œë‹¤, ë‹¤ì‹œ ëˆ„ë¥´ë©´ ì›€ì§ìž„ì´ ë‹¤ì‹œ ì‹œìž‘ëœë‹¤\n";
+	cout << "s: ë¯¸ë¡œì—ì„œ ê°ì²´ê°€ ë‚˜íƒ€ë‚œë‹¤\n";
+	cout << "â†’/â†/â†‘/â†“: ê°ì²´ë¥¼ ì•ž/ë’¤/ì¢Œ/ìš° ì´ë™\n";
+	cout << "+/-: ìœ¡ë©´ì²´ ì´ë™í•˜ëŠ” ì†ë„ ì¦ê°€/ê°ì†Œ\n";
+	cout << "1/3: ì¹´ë©”ë¼ ì‹œì  1ì¸ì¹­/3ì¸ì¹­ ë³€í™˜\n";
+	cout << "c: ëª¨ë“  ê°’ ì´ˆê¸°í™”\n";
+	cout << "q: í”„ë¡œê·¸ëž¨ ì¢…ë£Œ\n";
 	cout << "**********************************************************************************\n";
-	cout << "°¡·Î : ";
-	cin >> WidthInput;
-	cout << "¼¼·Î : ";
-	cin >> HeightInput;
+	//cout << "ê°€ë¡œ : ";
+	//cin >> WidthInput;
+	//cout << "ì„¸ë¡œ : ";
+	//cin >> HeightInput;
 
-	if (WidthInput < 5 || WidthInput>25 || HeightInput < 5 || HeightInput>25)
-	{
-		cout << "5~25°ªÀ» ÀÔ·ÂÇÏ¼¼¿ä\n";
-		cout << "°¡·Î : ";
-		cin >> WidthInput;
-		cout << "¼¼·Î : ";
-		cin >> HeightInput;
-	}
+	WidthInput = 25;
+	HeightInput = 25;
 
 	for (int i = 0; i < WidthInput; ++i)
 	{
 		for (int j = 0; j < HeightInput; ++j)
 		{
 			float RandomY = uid(dr);
-			randomY[i][j] = RandomY;
+			//randomY[i][j] = RandomY;
+			randomY[i][j] = 0.1f;
 			RandomColor[i][j] = randColor(dr);
 		}
 	}
 
-	readobj("square1.obj", ObjVertexVal[0]);		// Á÷À°¸éÃ¼ ¸é
-	readobj("cube.obj", ObjVertexVal[1]);			// »ç°¢Çü
+	readobj("square1.obj", ObjVertexVal[0]);		// ì§ìœ¡ë©´ì²´ ë©´
+	readobj("cube.obj", ObjVertexVal[1]);			// ì‚¬ê°í˜•
 
 	make_vertexShaders();
 	make_fragmentShaders();
