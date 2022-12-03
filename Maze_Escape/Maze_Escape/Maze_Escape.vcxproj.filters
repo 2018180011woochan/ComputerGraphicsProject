@@ -23,12 +23,21 @@
     <Filter Include="소스 파일\98.Default">
       <UniqueIdentifier>{195618d4-7bb3-46f8-8167-304ae42bda26}</UniqueIdentifier>
     </Filter>
+    <Filter Include="FileToOut">
+      <UniqueIdentifier>{32877674-3599-410c-90fb-8b16a63d9c9b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="fragment.glsl">
       <Filter>Shader</Filter>
     </None>
     <None Include="vertex.glsl">
+      <Filter>Shader</Filter>
+    </None>
+    <None Include="Shader\fragmentBlendShader.glsl">
+      <Filter>Shader</Filter>
+    </None>
+    <None Include="Shader\VertexTextureShader.glsl">
       <Filter>Shader</Filter>
     </None>
   </ItemGroup>
@@ -48,6 +57,9 @@
     <ClCompile Include="stdafx.cpp">
       <Filter>소스 파일\98.Default</Filter>
     </ClCompile>
+    <ClCompile Include="filetobuf.cpp">
+      <Filter>FileToOut</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="readobj.h">
@@ -63,6 +75,15 @@
       <Filter>소스 파일\99.Header</Filter>
     </ClInclude>
     <ClInclude Include="extern.h">
+      <Filter>소스 파일\99.Header</Filter>
+    </ClInclude>
+    <ClInclude Include="filetobuf.h">
+      <Filter>FileToOut</Filter>
+    </ClInclude>
+    <ClInclude Include="MakeShader.h">
+      <Filter>소스 파일\99.Header</Filter>
+    </ClInclude>
+    <ClInclude Include="stb_image.h">
       <Filter>소스 파일\99.Header</Filter>
     </ClInclude>
   </ItemGroup>

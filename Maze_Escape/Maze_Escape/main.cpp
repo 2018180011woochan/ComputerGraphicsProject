@@ -1,658 +1,649 @@
 ﻿#include "stdafx.h"
+#include<gl/glew.h>
+#include<gl/freeglut.h>
+#include<gl/glm/glm.hpp>
+#include<gl/glm/ext.hpp>
+#include<gl/glm/gtc/matrix_transform.hpp>
+#include<iostream>
+#include<vector>
+#include<random>
+#include<math.h>
+#include<fstream>
+#include<string>
+#include <mmsystem.h>    
+#include<Windows.h>
+#pragma comment(lib,"winmm.lib")
 
-#include <random>
+#include "filetobuf.h"
+#include "MakeShader.h"
 #include "readobj.h"
-#include "CGameObject.h"
-#include "CPlayer.h"
 
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
+
+void InitBuffer();
+void initTexture();
 using namespace std;
-
-random_device rd;
-default_random_engine dr(rd());
-uniform_real_distribution<> uid(0.1, 2.5);
-uniform_real_distribution<> randColor(0.0, 1.0);
-
-vector<glm::vec4> ObjVertexVal[2];
-float randomY[25][25];
-float RandomColor[25][25];
-
-GLuint VAO[2], VBO[3];
-GLuint shaderID[2];
-GLuint qobjshader;
-GLuint vertexshader;
-GLuint fragmentshader;
-
-void initbuffer();
-void make_vertexShaders();
-void make_fragmentShaders();
-void timer(int value);
+unsigned int texture[10];
+//call_back
+void MainView();
 void Resize(int w, int h);
-GLvoid drawscene();
-char* filetobuf(const string name);
-GLuint make_shaderProgram();
-GLvoid Reshape(int Width, int Height);
-GLvoid keyboard(unsigned char key, int x, int y);
-void MySpecialKey(int Key, int X, int Y);
-GLvoid ViewPort();
+void keyboardCall(unsigned char key, int x, int y);
 
-void MakeMaze();
-void Up();
-void Down();
-void Left();
-void Right();
-void PlayerUp();
-void PlayerDown();
-void PlayerLeft();
-void PlayerRight();
+//func
+void timer(int value);
+void ObjList();
+void drawscene();
 
-int width, height;
+int Wwidth = 0;
+int Wheight = 0;
 
-int MoveSpeed = 10;
-int curWidth = 0;
-int curHeight = 0;
+//Struck
 
-bool MoveDir = false;
-int moveCnt = 0;
+//--snow
+struct Snow {
+	float x;
+	float y;
+	float z;
+};
+Snow SLocation[200];
+Snow SaveLocation[200];
+Snow SnowSpeed[200];
 
-int WidthInput, HeightInput;
 
-int PlayerXPos = 1;
-int PlayerZPos = 0;
-float PlayerX = 0.f;
-float PlayerZ = 0.f;
-float startX, startZ;
+//--Light cube
+struct Star {
+	float x;
+	float y;
+	float z;
 
-bool dlscld1 = false;
-bool dlscld3 = true;
 
-struct ObjTrans
-{
-	float X = 0.0f;
-	float Z = 0.0f;
-	float Y = 5.0f;
-}TransList;
-
-struct ObjRot
-{
-	float X = 0.0f;
-	float Z = 0.0f;
-	float Y = 0.0f;
-	float CameraY1 = 0.0f;
-	float CameraY2 = 0.0f;
-}RotList;
+};
+Star StarLocation[80];
+Star StarSaveLocation[80];
+Star StarSpeed[80];
 
 struct Camera
 {
-	float C_x = 0.0f;
-	float C_y = 5.f;
-	float C_z = 11.0f;
+	float C_x = 1.0f;
+	float C_y = 5.0f;
+	float C_z = 9.0f;
 
-}CameraPos;
+}Camerapos;
 
-CGameObject* _player;
-
-GLvoid Reshape(int Width, int Height)
+struct Angle
 {
-	glViewport(0, 0, 1600, 900);
-}
+	float angle = 0.0f;
+	float anglex = 0.0f;
+	float angley = 0.0f;
+	float AngleTrap2 = 00.0f;
+	float AngleTrap = 0.0f;
+	float Radian = 0.0f;
+	//---------------------
+	float AngleRevolx = 45.0f;
+	float AngleRevoly = 45.0f;
+	//----------------------
+	float anglecamera = 160.0f;
+	float anglecamera2 = 0.0f;
+	float ObjAngle = 20.0f;
+	//------------------
+	float LightRadian = 10.0f;
+	//------------------
+	float BodyAngle = 0.0f;
+	float ArmAngle = 45.0f;
+	float LegAngle = 0.0f;
+	float MainSwing1 = 0.0f;
+	float MainSwing2 = 0.0f;
+	float StageAngle = 0.0f;
+	float StageAngle2 = 0.0f;
+	float EyeAngle = 0.0f;
+	float CpaeAngle = 0.0f;
+}AngleList;
 
-void Resize(int w, int h)
+//scale
+struct Scale
 {
-	width = w;
-	height = h;
-	glViewport(0, 0, width, height);
-}
+	float X = 0.0f;
+	float Y = 4.5f;
+	float Z = 6.5f;
+	//-------------
+	float x = 2.0f;
+	float y = 2.0f;
+	float z = 2.0f;
+	//-------------
+	float Mx = 0.0f;
+	float My = 0.0f;
+	float Mz = 0.0f;
+	//--------------
+	float ALx = 0.1f;
+	float ALy = 0.3f;
+	float ALz = 0.1f;
+	//---------------
+	float TSy = 0.6f;
+	//---------------
+	float Doorx = 6.0f;
+	//---------------
+	float PullScaleRx[3] = { 6.0f,6.0f,6.0f };
+	float PullScaleRz = 2.0f;
+	float PullScaleRy = 2.0f;
+	//------------------
+	float PullScaleLx[3] = { 6.0f,6.0f,6.0f };
+	float PullScaleLz = 2.0f;
+	float PullScaleLy = 2.0f;
+}Scalepos;
 
-void make_vertexShaders() {
-	GLchar* vertexsource1;
-
-	vertexsource1 = filetobuf("vertex.glsl");
-
-	vertexshader = glCreateShader(GL_VERTEX_SHADER);
-	glShaderSource(vertexshader, 1, &vertexsource1, NULL);
-	glCompileShader(vertexshader);
-
-	GLchar* vertexsource2;
-
-	vertexsource2 = filetobuf("vertex.glsl");
-
-	qobjshader = glCreateShader(GL_VERTEX_SHADER);
-	glShaderSource(qobjshader, 1, &vertexsource2, NULL);
-	glCompileShader(qobjshader);
-
-	GLint result;
-	GLchar errorlog[512];
-	glGetShaderiv(vertexshader, GL_COMPILE_STATUS, &result);
-	if (!result) {
-		glGetShaderInfoLog(vertexshader, 512, NULL, errorlog);
-		cerr << "Error:vertexshader 컴파일 실패" << errorlog << endl;
-	}
-
-}
-
-void make_fragmentShaders() {
-	GLchar* fragmentsource;
-	fragmentsource = filetobuf("fragment.glsl");
-
-	fragmentshader = glCreateShader(GL_FRAGMENT_SHADER);
-	glShaderSource(fragmentshader, 1, &fragmentsource, NULL);
-	glCompileShader(fragmentshader);
-
-	GLint result;
-	GLchar errorlog[512];
-	glGetShaderiv(fragmentshader, GL_COMPILE_STATUS, &result);
-	if (!result) {
-		glGetShaderInfoLog(fragmentshader, 512, NULL, errorlog);
-		cerr << "Error:fragmentshader 컴파일 실패" << errorlog << endl;
-	}
-
-}
-
-GLuint make_shaderProgram()
+//trans
+struct Transration
 {
-	shaderID[0] = glCreateProgram();
-
-	glAttachShader(shaderID[0], vertexshader);
-	glAttachShader(shaderID[0], fragmentshader);
-
-	shaderID[1] = glCreateProgram();
-
-	glAttachShader(shaderID[1], qobjshader);
-	glAttachShader(shaderID[1], fragmentshader);
-
-	glLinkProgram(shaderID[0]);
-	glLinkProgram(shaderID[1]);
-
-	glDeleteShader(vertexshader);
-	glDeleteShader(qobjshader);
-	glDeleteShader(fragmentshader);
-
-	glUseProgram(shaderID[0]);
-	glUseProgram(shaderID[1]);
-
-	return 1;
-}
-
-char* filetobuf(const string name)
-{
-	vector<char> tempFile;
-	ifstream in(name, ios::binary);
-	char temp;
-	while (true) {
-		noskipws(in);
-		in >> temp;
-		if (in.eof()) {
-			tempFile.push_back(0);
-			break;
-		}
-		else
-			tempFile.push_back(temp);
-	}
-	char* addr = new char[tempFile.size()];
-	for (int i = 0; i < tempFile.size(); i++) {
-		addr[i] = tempFile[i];
-	}
-	return addr;
-}
-
-glm::vec3 cameraPos;
-GLvoid ViewPort()
-{
-	glClearColor(0.2, 0.2, 0.2, 1.0f);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glEnable(GL_DEPTH_TEST);
-
-	glUseProgram(shaderID[0]);
-
-	glViewport(0, 0, width, (height / 4) * 3);
-
-	if (dlscld3)
-		cameraPos = glm::vec3(CameraPos.C_x, CameraPos.C_y, CameraPos.C_z);
-	if (dlscld1)
-		cameraPos = glm::vec3(_player->_xPos, 1.f, _player->_zPos);
-
-	glm::mat4 CameraSpacePos = glm::mat4(1.0f);
-	CameraSpacePos = glm::rotate(CameraSpacePos, glm::radians(RotList.CameraY1), glm::vec3(0.0f, 1.0f, 0.0f));
-	glm::vec4 CameraPosDistance = glm::vec4(cameraPos, 1);
-	CameraPosDistance = CameraSpacePos * CameraPosDistance;
-	glm::vec3 CameraPosDir = glm::vec3(CameraPosDistance.x, CameraPosDistance.y, CameraPosDistance.z);
-	glm::vec3 ObjectCameraPicking = glm::vec3(0.0f, 0.0f, 0.0f);
-	glm::vec3 ObjectCameradir = CameraPosDir - ObjectCameraPicking;
-	glm::vec3 Up_y = glm::vec3(0.0f, 1.0f, 0.0f);
-
-	glm::mat4 CameraSpacedir = glm::mat4(1.0f);
-	CameraSpacedir = glm::rotate(CameraSpacedir, glm::radians(RotList.CameraY2), glm::vec3(0.0f, 1.0f, 0.0f));
-	glm::vec4 CameraSpaceMul = CameraSpacedir * glm::vec4(ObjectCameradir, 1);
-	glm::vec3 Cameradir;
-	Cameradir.x = CameraSpaceMul.x; Cameradir.y = CameraSpaceMul.y; Cameradir.z = CameraSpaceMul.z;
-	Cameradir = glm::normalize(Cameradir);
-
-	glm::mat4 RotateSpacedir = glm::mat4(1.0f);
-	RotateSpacedir = glm::rotate(RotateSpacedir, glm::radians(RotList.CameraY2), glm::vec3(0.0f, 1.0f, 0.0f));
-	glm::vec3 RotateobjSpacedir = glm::vec3(ObjectCameraPicking - CameraPosDir);
-	glm::vec4 Rotatedir = glm::vec4(RotateobjSpacedir, 1);
-	Rotatedir = RotateSpacedir * Rotatedir;
-	RotateobjSpacedir = glm::vec3(Rotatedir.x + CameraPosDir.x, Rotatedir.y + CameraPosDir.y, Rotatedir.z + CameraPosDir.z);
-	glm::vec3 Crosspos = glm::normalize(glm::cross(Up_y, Cameradir));
-	glm::vec3 Cross = glm::cross(Cameradir, Crosspos);
-
-	glm::mat4 S_proj = glm::mat4(1.0f);
-	S_proj = glm::perspective(glm::radians(45.0f), (float)width / height, 0.1f, 100.0f);
-	unsigned int ProjLocation = glGetUniformLocation(shaderID[0], "projectiontransform");
-	glUniformMatrix4fv(ProjLocation, 1, GL_FALSE, &S_proj[0][0]);
-
-
-	glm::mat4 S_View = glm::mat4(1.0f);
-	S_View = glm::lookAt(CameraPosDir, RotateobjSpacedir, Cross);
-	unsigned int ViewLocation = glGetUniformLocation(shaderID[0], "viewtransform");
-	glUniformMatrix4fv(ViewLocation, 1, GL_FALSE, glm::value_ptr(S_View)); //뷰
-
-
-//------------------------------camera---------------------------------------------
-	
-	//glm::vec3 ObjectCamerapos = glm::vec3(CameraPos.C_x - _player->_xPos, CameraPos.C_y + _player->_yPos, CameraPos.C_z - _player->_zPos);
-	//glm::vec3 ObjectCamerapos = glm::vec3(_player->_xPos, _player->_yPos, _player->_zPos);
-	//glm::mat4 CameraSpacepos = glm::mat4(1.0f);
-	//CameraSpacepos = glm::rotate(CameraSpacepos, glm::radians(160.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-	//glm::vec3 Cameraposdir = glm::vec3(CameraSpacepos * glm::vec4(ObjectCamerapos, 1));
-	//glm::vec3 ObjectCameraPicking = glm::vec3(_player->_xPos, _player->_yPos, _player->_zPos);
-	//glm::vec3 ObjectCameradir = Cameraposdir - ObjectCameraPicking;
-	//glm::vec3 Up_y = glm::vec3(0.0f, 1.0f, 0.0f);
-
-	//glm::mat4 CameraSpacedir = glm::mat4(1.0f);
-	//CameraSpacedir = glm::rotate(CameraSpacedir, glm::radians(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-	//glm::vec3 Cameradir = glm::vec3(CameraSpacedir * glm::vec4(-ObjectCameradir, 1));
-
-	//glm::vec3 Crosspos = glm::normalize(glm::cross(Up_y, glm::normalize(Cameradir)));
-	//glm::vec3 Cross = glm::cross(glm::normalize(Cameradir), Crosspos);
-
-	//glm::mat4 ObjView = glm::mat4(1.0f);
-	//ObjView = glm::lookAt(Cameraposdir, Cameradir + Cameraposdir, Cross);
-	//unsigned int ObjcameraViewLocation = glGetUniformLocation(shaderID[0], "viewtransform");
-	//glUniformMatrix4fv(ObjcameraViewLocation, 1, GL_FALSE, glm::value_ptr(ObjView));
-
-	//glm::vec3 CameraView;
-	//CameraView = glm::vec3(Cameraposdir);
-	//unsigned int ViewPositionLocation = glGetUniformLocation(shaderID[0], "camerapos");
-	//glUniform3fv(ViewPositionLocation, 1, glm::value_ptr(CameraView));
-
-	////--------����
-	//glm::mat4 Proj = glm::mat4(1.0f);
-	//Proj = glm::perspective(glm::radians(60.0f), (float)width / height, 0.1f, 100.0f);
-	//unsigned int ModelProjLocation = glGetUniformLocation(shaderID[0], "projectionTransform");
-	//glUniformMatrix4fv(ModelProjLocation, 1, GL_FALSE, &Proj[0][0]);
-
-	drawscene();
-
-
-
-	glViewport((width / 4) * 3, (height / 4) * 3, width / 4, height / 4);
-	glm::vec3 PlainCameraPos = glm::vec3(0.0f, 2.0f, 0.0f);
-	glm::vec3 PlainCameraDirection = glm::vec3(1.0f, 0.0f, 0.0f) - PlainCameraPos;
-	glm::vec3 PlainViewUp = glm::vec3(0.0f, 0.0f, -1.0f);
-	glm::mat4 PlainView = glm::mat4(1.0f);
-	glm::mat4 PlainOrtho = glm::mat4(1.0f);
-	unsigned int PlainViewLocation = glGetUniformLocation(shaderID[1], "viewtransform");
-	unsigned int PlainOrthoLocation = glGetUniformLocation(shaderID[1], "projectiontransform");
-	PlainView = glm::lookAt(PlainCameraPos, PlainCameraDirection, PlainViewUp);
-	PlainOrtho = glm::ortho(-2.0f, 2.0f, -1.0f, 2.0f, 0.5f, 36.0f);
-	glUniformMatrix4fv(PlainViewLocation, 1, GL_FALSE, glm::value_ptr(PlainView));
-	glUniformMatrix4fv(PlainOrthoLocation, 1, GL_FALSE, glm::value_ptr(PlainOrtho));
-	drawscene();
-
-	glutSwapBuffers();
-}
-
-GLvoid drawscene()
-{
-	glUseProgram(shaderID[0]);
-
-	glBindVertexArray(VAO[0]);	// 바닥
-	glm::mat4 Floor = glm::mat4(1.0f);
-	Floor = glm::scale(Floor, glm::vec3(0.5f * WidthInput, 1.f, 0.5f * HeightInput));
-	Floor = glm::translate(Floor, glm::vec3(0.0f, 0.0f, 0.0f));
-	unsigned int ObjFloorLocation = glGetUniformLocation(shaderID[1], "modeltransform");
-	glUniformMatrix4fv(ObjFloorLocation, 1, GL_FALSE, glm::value_ptr(Floor));
-	unsigned int ObjFloorfragLocation = glGetUniformLocation(shaderID[1], "vColor");
-	glUniform3f(ObjFloorfragLocation, 1.f, 1.f, 1.f);
-	glDrawArrays(GL_QUADS, 0, 24);
-	startX = 0.f - 0.5f * WidthInput;
-	startZ = 0.f - 0.5f * HeightInput;
-
-	float realStartX = startX + 0.5f;
-	float realStartZ = startZ + 0.5f;
-
-	for (int i = 0; i < WidthInput; ++i)
-	{
-		for (int j = 0; j < HeightInput; ++j)
-		{
-			glBindVertexArray(VAO[1]);	// 기둥
-			glm::mat4 Pillar = glm::mat4(1.0f);
-			Pillar = glm::scale(Pillar, glm::vec3(0.5f, randomY[i][j], 0.5f));
-			Pillar = glm::translate(Pillar, glm::vec3(realStartX + i * 1.0f, TransList.Y, realStartZ + j * 1.0f));
-			unsigned int ObjPillarLocation = glGetUniformLocation(shaderID[1], "modeltransform");
-			glUniformMatrix4fv(ObjPillarLocation, 1, GL_FALSE, glm::value_ptr(Pillar));
-			unsigned int ObjPillarfragLocation = glGetUniformLocation(shaderID[1], "vColor");
-			glUniform3f(ObjPillarfragLocation, RandomColor[i][j], RandomColor[j][i], RandomColor[i][j]);
-			glDrawArrays(GL_QUADS, 0, 24);
-		}
-	}
-
-	PlayerX = realStartX + 1.0f;
-	PlayerZ = realStartZ;
-
-	glBindVertexArray(VAO[2]);	// 플레이어
-	glm::mat4 Player = glm::mat4(1.0f);
-	Player = glm::scale(Player, glm::vec3(0.2f, 0.3f, 0.2f));
-	Player = glm::translate(Player, glm::vec3(PlayerX + _player->GetPlayerXPos(), 0.f, PlayerZ + _player->GetPlayerZPos()));
-	unsigned int ObjPlayerLocation = glGetUniformLocation(shaderID[1], "modeltransform");
-	glUniformMatrix4fv(ObjPlayerLocation, 1, GL_FALSE, glm::value_ptr(Player));
-	unsigned int ObjPlayerfragLocation = glGetUniformLocation(shaderID[1], "vColor");
-	glUniform3f(ObjPlayerfragLocation, 1.f, 0.f, 0.f);
-	glDrawArrays(GL_QUADS, 0, 24);
-
-
-}
-
-void initbuffer()
-{
-	glGenVertexArrays(2, VAO);
-
-	glBindVertexArray(VAO[0]);	// 바닥
-	glGenBuffers(1, &VBO[1]);
-	glBindBuffer(GL_ARRAY_BUFFER, VBO[1]);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec4) * ObjVertexVal[0].size(), &ObjVertexVal[0][0], GL_STREAM_DRAW);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec4), (void*)0);
-	glEnableVertexAttribArray(0);
-
-	glBindVertexArray(VAO[1]);	// 기둥
-	glGenBuffers(1, &VBO[2]);
-	glBindBuffer(GL_ARRAY_BUFFER, VBO[2]);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec4) * ObjVertexVal[1].size(), &ObjVertexVal[1][0], GL_STREAM_DRAW);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec4), (void*)0);
-	glEnableVertexAttribArray(0);
-
-	glBindVertexArray(VAO[2]);	// 플레이어
-	glGenBuffers(1, &VBO[3]);
-	glBindBuffer(GL_ARRAY_BUFFER, VBO[3]);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec4) * ObjVertexVal[1].size(), &ObjVertexVal[1][0], GL_STREAM_DRAW);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec4), (void*)0);
-	glEnableVertexAttribArray(0);
-
-	_player = new CPlayer();
-	MakeMaze();
-}
-
-void timer(int value)
-{
-	if (TransList.Y >= 0.f)
-		TransList.Y -= 0.1f;
-
-
-
-	glutPostRedisplay();
-	glutTimerFunc(MoveSpeed, timer, 1);
-
-}
-
-void MakeMaze()
-{
-	int dir;
-	while (1)
-	{
-		if (curHeight == HeightInput - 1/*  || curWidth == WidthInput - 1*/)
-		{
-			break;
-		}
-
-		// 방향 정하기
-		if (MoveDir)
-		{
-			dir = rand() % 2;
-			MoveDir = false;
-		}
-		else
-		{
-			dir = rand() % 2 + 2;
-			MoveDir = true;
-		}
-		// 칸수 정하기
-		moveCnt = rand() % 7 + 2;
-
-		// 상하라면
-		switch (dir)
-		{
-		case 0:		// 우
-			if (curHeight >= HeightInput - 1)
-			{
-				Left();
-				break;
-			}
-
-			Right();
-			break;
-		case 1:		// 좌
-			if (curHeight <= 0)
-			{
-				Right();
-				break;
-			}
-			Left();
-			break;
-		case 2:		// 상
-			if (curWidth <= 0)
-			{
-				Down();
-				break;
-			}
-			Up();
-			break;
-		case 3:		// 하
-			if (curWidth >= WidthInput - 1)
-			{
-				Up();
-				break;
-			}
-			Down();
-
-			break;
-		}
-
-	}
-}
-
-void Up()
-{
-	for (int i = 0; i < moveCnt; ++i)
-	{
-		if (curWidth <= 0)
-		{
-			curWidth = 0;
-			break;
-		}
-
-		curWidth--;
-		randomY[curWidth][curHeight] = 0.f;
-	}
-}
-
-void Down()
-{
-	for (int i = 0; i < moveCnt; ++i)
-	{
-		if (curWidth >= WidthInput - 1)
-		{
-			curWidth = WidthInput - 1;
-			break;
-		}
-
-		curWidth++;
-		randomY[curWidth][curHeight] = 0.f;
-	}
-}
-
-void Left()
-{
-	for (int i = 0; i < moveCnt; ++i)
-	{
-		if (curHeight <= 0) {
-			curHeight = 0;
-			break;
-		}
-
-		curHeight--;
-		randomY[curWidth][curHeight] = 0.f;
-	}
-}
-
-void Right()
-{
-	for (int i = 0; i < moveCnt; ++i)
-	{
-		if (curHeight >= HeightInput - 1)
-		{
-			curHeight = HeightInput - 1;
-			break;
-		}
-
-		curHeight++;
-		randomY[curWidth][curHeight] = 0.f;
-	}
-}
-
-GLvoid keyboard(unsigned char key, int x, int y)
-{
-	switch (key) {
-	case '1':
-		dlscld1 = true;
-		dlscld3 = false;
-		break;
-	case '3':
-		dlscld3 = true;
-		dlscld1 = false;
-		break;
-	case 'q':
-		exit(0);
-		break;
-	}
-	glutPostRedisplay();
-}
-
-void PlayerUp()
-{
-	//if (randomY[PlayerXPos][PlayerZPos - 1] == 0.f)
-	{
-		_player->SetPlayerZPos(_player->GetPlayerZPos() - 1.f);
-		PlayerZPos -= 1;
-	}
-}
-
-void PlayerDown()
-{
-	//if (randomY[PlayerXPos][PlayerZPos + 1] == 0.f)
-	{
-		_player->SetPlayerZPos(_player->GetPlayerZPos() + 1.f);
-		PlayerZPos += 1;
-	}
-}
-
-void PlayerLeft()
-{
-	//if (randomY[PlayerXPos - 1][PlayerZPos] == 0.f)
-	{
-		_player->SetPlayerXPos(_player->GetPlayerXPos() - 1.f);
-		PlayerXPos -= 1;
-	}
-}
-
-void PlayerRight()
-{
-	//if (randomY[PlayerXPos + 1][PlayerZPos] == 0.f)
-	{
-		_player->SetPlayerXPos(_player->GetPlayerXPos() + 1.f);
-		PlayerXPos += 1;
-	}
-}
-
-void MySpecialKey(int Key, int X, int Y)
-{
-	switch (Key) {
-	case GLUT_KEY_LEFT:     //왼쪽 키
-		PlayerLeft();
-		glutPostRedisplay();
-		break;
-	case GLUT_KEY_RIGHT:     //오른쪽 키
-		PlayerRight();
-		glutPostRedisplay();
-		break;
-	case GLUT_KEY_UP:      //위 키
-		PlayerUp();
-		glutPostRedisplay();
-		break;
-	case GLUT_KEY_DOWN:      //아래 키
-		PlayerDown();
-		glutPostRedisplay();
-		break;
-	}
-}
+	float T_x = 0.0f;
+	float T_y = 0.8f;
+	float T_z = 0.0f;
+	//---------------
+	float T_StageX = 0.0f;
+	float T_StageY = 0.0f;
+	float T_StageZ = 0.0f;
+	//----------------
+	float T_Stage2X = 0.0f;
+	float T_Stage2Y = 0.0f;
+	float T_Stage2Z = 0.0f;
+	//------------------
+	float T_Stage2ZA[3] = { 35.0f,50.0f,65.0f };
+	//----------------
+	float T_Trapx = 0.0f;
+	float T_Trapy = 0.6f;
+	float T_Trapz = 0.0f;
+	//-----------------
+	float T_Trapx2 = 16.0f;
+	float T_Trapy2 = 1.5f;
+	float T_Trapz2 = 20.0f;
+	//---------------
+	float T_Bodyx = 0.0f;
+	float T_Bodyy = 0.9f;
+	float T_Bodyz = -2.0f;
+	//--------------------
+	float T_Cpaex = 0.0f;
+	float T_Cpaey = 0.6f;
+	float T_Cpaez = -2.0f;
+	//-------------------
+	float T_Eyex = 0.0f;
+	float T_Eyey = 0.9f;
+	float T_Eyez = -2.0f;
+	//----------------
+	float T_ArmLegx = 0.0f;
+	float T_ArmLegy = 0.77f;
+	float T_ArmLegz = 0.0f;
+	//-------------------
+	float DoorxL = 1.8f;
+	float DoorxR = -1.8f;
+
+}TransList;
+
+
+GLuint VAO[30];
+GLuint VBO[90];
+
+vector<glm::vec4> Vertex[26];
+vector<glm::vec4> Nomal[26];
+vector<glm::vec2> Texture[26];
+
+
+int Mainswingchk = 1;
+
+glm::vec3 objC = glm::vec3(0, 0, 0);
+glm::vec3 cameraPos = glm::vec3(1.0f, 3.0f, 10.0f);
+glm::vec3 lightPos = glm::vec3(0, 3.0f, 2.5f);
+glm::vec3 lightColor = glm::vec3(1.4f, 1.3f, 1.3f);
+glm::vec3 Cameraposdir = glm::vec3(0.0f);
+glm::vec3 Cameradir = glm::vec3(0.0f);
+float Movevalue = 0.2f;
 
 int main(int argc, char** argv)
 {
-	srand(time(NULL));
+	//PlaySound(TEXT("backsound.wav"), NULL, SND_ASYNC | SND_ALIAS);
 	glutInit(&argc, argv);
-	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH);
+	glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH);
 	glutInitWindowPosition(0, 0);
-	glutInitWindowSize(1600, 900);
-	glutCreateWindow("Moving Mountain & Maze");
+	glutInitWindowSize(Wwidth, Wheight);
+	glutCreateWindow("Maze_Escape");
 
 	glewExperimental = GL_TRUE;
 	if (glewInit() != GLEW_OK)
 		cerr << "fail Initialize" << endl;
+	else cout << "Initialize" << endl;
+	ObjList();
 
-	cout << "**********************************************************************************\n";
-	cout << "o/p 투영을 선택한다 (직각 투영 / 원근 투영\n";
-	cout << "z/Z 원근 투영 시 z축으로 이동할 수 있게 한다\n";
-	cout << "m/M: 육면체들이 위 아래로 움직인다 / 멈춘다\n";
-	cout << "y/Y: 카메라가 바닥의 y축을 기준으로 양/음 방향으로 회전한다.\n";
-	cout << "r: 미로를 제작한다\n";
-	cout << "v: 육면체들 움직임이 멈추고 낮은 높이로 변한다, 다시 누르면 움직임이 다시 시작된다\n";
-	cout << "s: 미로에서 객체가 나타난다\n";
-	cout << "→/←/↑/↓: 객체를 앞/뒤/좌/우 이동\n";
-	cout << "+/-: 육면체 이동하는 속도 증가/감소\n";
-	cout << "1/3: 카메라 시점 1인칭/3인칭 변환\n";
-	cout << "c: 모든 값 초기화\n";
-	cout << "q: 프로그램 종료\n";
-	cout << "**********************************************************************************\n";
-	//cout << "가로 : ";
-	//cin >> WidthInput;
-	//cout << "세로 : ";
-	//cin >> HeightInput;
+	makeShaderID();
+	InitBuffer();
+	initTexture();
+	glutDisplayFunc(MainView);
+	glutReshapeFunc(Resize);
+	glutKeyboardFunc(keyboardCall);
+	glutTimerFunc(1, timer, 1);
+	glutMainLoop();
+}
 
-	WidthInput = 25;
-	HeightInput = 25;
+void timer(int value)
+{
+	
+	glutPostRedisplay();
+	glutTimerFunc(17, timer, value);
+}
 
-	for (int i = 0; i < WidthInput; ++i)
+void MainView()
+{
+	glClearColor(0.9989, 0.9989, 0.9989, 0);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glEnable(GL_CULL_FACE);
+
 	{
-		for (int j = 0; j < HeightInput; ++j)
-		{
-			float RandomY = uid(dr);
-			//randomY[i][j] = RandomY;
-			randomY[i][j] = 0.1f;
-			RandomColor[i][j] = randColor(dr);
-		}
+		glBindVertexArray(VAO[0]);
+		unsigned int StartGroundBlendCheck = glGetUniformLocation(shaderID, "Blendcheck");
+		glUniform1i(StartGroundBlendCheck, 2);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, texture[0]);
+		glUniform1i(glGetUniformLocation(shaderID, "textureC"), 0);
+		glm::mat4 StartGround = glm::mat4(1.0f);
+		unsigned int StartGroundNormalMatrixLocation = glGetUniformLocation(shaderID, "normalTransform");
+		glUniformMatrix4fv(StartGroundNormalMatrixLocation, 1, GL_FALSE, glm::value_ptr(StartGround));
+		unsigned int cameraViewLocation = glGetUniformLocation(shaderID, "viewTransform");
+		glUniformMatrix4fv(cameraViewLocation, 1, GL_FALSE, glm::value_ptr(StartGround));
+		unsigned int cameraPosLocation = glGetUniformLocation(shaderID, "cameraPos");
+		glUniform3fv(cameraPosLocation, 1, glm::value_ptr(glm::vec3(0, 0, 1)));
+		unsigned int projectionLocation = glGetUniformLocation(shaderID, "projectionTransform");
+		glUniformMatrix4fv(projectionLocation, 1, GL_FALSE, glm::value_ptr(StartGround));
+		StartGround = glm::translate(StartGround, glm::vec3(0, 0, -1));
+		StartGround = glm::rotate(StartGround, glm::radians(-90.0f), glm::vec3(1, 0, 0));
+		StartGround = glm::scale(StartGround, glm::vec3(2, 2, 2));
+		unsigned int backgroundMatrixLocation = glGetUniformLocation(shaderID, "modelTransform");
+		glUniformMatrix4fv(backgroundMatrixLocation, 1, GL_FALSE, glm::value_ptr(StartGround));
+		glDrawArrays(GL_TRIANGLES, 0, Vertex[0].size());
 	}
 
-	readobj("square1.obj", ObjVertexVal[0]);		// 직육면체 면
-	readobj("cube.obj", ObjVertexVal[1]);			// 사각형
+	glClearColor(0.0, 0.0, 0.0, 1.0f);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_CULL_FACE);
+	glUseProgram(shaderID);
+	//------------------------------camera---------------------------------------------
 
-	make_vertexShaders();
-	make_fragmentShaders();
-	make_shaderProgram();
-	initbuffer();
-	glutDisplayFunc(ViewPort);
-	glutKeyboardFunc(keyboard);
-	glutSpecialFunc(MySpecialKey);
-	glutTimerFunc(MoveSpeed, timer, 1);
-	glutReshapeFunc(Resize);
-	glutMainLoop();
+	glm::vec3 ObjectCamerapos = glm::vec3(Camerapos.C_x - TransList.T_Bodyx, Camerapos.C_y + TransList.T_Bodyy, Camerapos.C_z - TransList.T_Bodyz);
+	glm::mat4 CameraSpacepos = glm::mat4(1.0f);
+	CameraSpacepos = glm::rotate(CameraSpacepos, glm::radians(AngleList.anglecamera), glm::vec3(0.0f, 1.0f, 0.0f));//����
+	glm::vec3 Cameraposdir = glm::vec3(CameraSpacepos * glm::vec4(ObjectCamerapos, 1));
+	glm::vec3 ObjectCameraPicking = glm::vec3(TransList.T_Bodyx, TransList.T_Bodyy, TransList.T_Bodyz);
+	glm::vec3 ObjectCameradir = Cameraposdir - ObjectCameraPicking;
+	glm::vec3 Up_y = glm::vec3(0.0f, 1.0f, 0.0f);
+
+	glm::mat4 CameraSpacedir = glm::mat4(1.0f);
+	CameraSpacedir = glm::rotate(CameraSpacedir, glm::radians(AngleList.anglecamera2), glm::vec3(0.0f, 1.0f, 0.0f));//���� 
+	glm::vec3 Cameradir = glm::vec3(CameraSpacedir * glm::vec4(-ObjectCameradir, 1));
+
+	glm::vec3 Crosspos = glm::normalize(glm::cross(Up_y, glm::normalize(Cameradir)));
+	glm::vec3 Cross = glm::cross(glm::normalize(Cameradir), Crosspos);
+
+	glm::mat4 ObjView = glm::mat4(1.0f);
+	ObjView = glm::lookAt(Cameraposdir, Cameradir + Cameraposdir, Cross);
+	unsigned int ObjcameraViewLocation = glGetUniformLocation(shaderID, "viewTransform");
+	glUniformMatrix4fv(ObjcameraViewLocation, 1, GL_FALSE, glm::value_ptr(ObjView));
+
+	glm::vec3 CameraView;
+	CameraView = glm::vec3(Cameraposdir);
+	unsigned int ViewPositionLocation = glGetUniformLocation(shaderID, "camerapos");
+	glUniform3fv(ViewPositionLocation, 1, glm::value_ptr(CameraView));
+
+	//--------����
+	glm::mat4 Proj = glm::mat4(1.0f);
+	Proj = glm::perspective(glm::radians(60.0f), (float)Wwidth / Wheight, 0.1f, 200.0f);
+	unsigned int ModelProjLocation = glGetUniformLocation(shaderID, "projectionTransform");
+	glUniformMatrix4fv(ModelProjLocation, 1, GL_FALSE, &Proj[0][0]);
+
+
+	//--------����
+	glm::mat4 LightPosition = glm::mat4(1.0f);
+	LightPosition = glm::rotate(LightPosition, glm::radians(AngleList.LightRadian), glm::vec3(0.0f, 1.0f, 0.0f));
+	LightPosition = glm::translate(LightPosition, glm::vec3(Scalepos.X, Scalepos.Y, Scalepos.Z - 1.0f));
+	unsigned int lightPosLocation = glGetUniformLocation(shaderID, "LightPos");
+	glUniform3fv(lightPosLocation, 1, glm::value_ptr(glm::vec3(0, 0, 0)));
+	unsigned int lightColorLocation = glGetUniformLocation(shaderID, "LightColor");
+	glUniform3fv(lightColorLocation, 1, glm::value_ptr(lightColor));
+	unsigned int LightTransformLocation = glGetUniformLocation(shaderID, "LightTransform");
+	glUniformMatrix4fv(LightTransformLocation, 1, GL_FALSE, glm::value_ptr(LightPosition));
+
+
+	drawscene();
+	glutSwapBuffers();
+}
+
+void Resize(int w, int h)
+{
+	glViewport(0, 0, w, h);
+	Wwidth = w;
+	Wheight = h;
+}
+
+void keyboardCall(unsigned char key, int x, int y)
+{
+	switch (key)
+	{
+	case'w':
+		Mainswingchk = 1;
+		AngleList.BodyAngle = Movevalue;
+		AngleList.LegAngle = Movevalue;
+		TransList.T_Eyez += Movevalue;
+		TransList.T_Bodyz += Movevalue;
+		TransList.T_ArmLegz += Movevalue;
+
+		if (TransList.T_Bodyz > TransList.T_StageZ + 70.0f && TransList.T_Bodyz < TransList.T_StageZ + 80.0f)
+		{
+
+			TransList.T_Eyez += Movevalue;
+			TransList.T_Bodyz += Movevalue;
+			TransList.T_ArmLegz += Movevalue;
+			TransList.T_Bodyy += Movevalue;
+			TransList.T_ArmLegy += Movevalue;
+			TransList.T_Eyey += Movevalue;
+		}
+		break;
+	case's':
+		Mainswingchk = 1;
+		AngleList.BodyAngle = 180.0f;
+		AngleList.LegAngle = 0.0f;
+		TransList.T_Eyez -= Movevalue;
+		TransList.T_Bodyz -= Movevalue;
+		TransList.T_ArmLegz -= Movevalue;
+		TransList.T_Cpaez -= Movevalue;
+		if (TransList.T_Bodyz > TransList.T_StageZ + 70.0f && TransList.T_Bodyz < TransList.T_StageZ + 80.0f)
+		{
+
+			TransList.T_Eyez -= Movevalue;
+			TransList.T_Bodyz -= Movevalue;
+			TransList.T_ArmLegz -= Movevalue;
+			TransList.T_Bodyy -= Movevalue;
+			TransList.T_ArmLegy -= Movevalue;
+			TransList.T_Eyey -= Movevalue;
+		}
+		break;
+	case'a':
+		Mainswingchk = 2;
+		AngleList.BodyAngle = 90.0f;
+		AngleList.LegAngle = 180.0f;
+		TransList.T_Eyex += Movevalue;
+		TransList.T_Bodyx += Movevalue;
+		TransList.T_ArmLegx += Movevalue;
+		break;
+	case'd':
+		Mainswingchk = 2;
+		AngleList.BodyAngle = 270.0f;
+		AngleList.LegAngle = 180.0f;
+		TransList.T_Eyex -= Movevalue;
+		TransList.T_Bodyx -= Movevalue;
+		TransList.T_ArmLegx -= Movevalue;
+		break;
+	case'q':
+		glutLeaveMainLoop();
+		break;
+	}
+	glutPostRedisplay();
+}
+
+void InitBuffer()
+{
+	glGenVertexArrays(26, VAO);
+
+	for (int i = 0; i < 2; i++)
+	{
+		glBindVertexArray(VAO[i]);
+		glGenBuffers(3, &VBO[3 * i]);
+		glBindBuffer(GL_ARRAY_BUFFER, VBO[3 * i]);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec4) * Vertex[i].size(), &Vertex[i][0], GL_STATIC_DRAW);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec4), (void*)0);
+		glEnableVertexAttribArray(0);
+		glBindBuffer(GL_ARRAY_BUFFER, VBO[3 * i + 1]);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec4) * Nomal[i].size(), &Nomal[i][0], GL_STATIC_DRAW);
+		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec4), (void*)0);
+		glEnableVertexAttribArray(1);
+		glBindBuffer(GL_ARRAY_BUFFER, VBO[3 * i + 2]);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec2) * Texture[i].size(), &Texture[i][0], GL_STATIC_DRAW);
+		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(glm::vec2), (void*)0);
+		glEnableVertexAttribArray(2);
+
+	}
+
+}
+
+void ObjList()
+{
+	//readTriangleObj("plane3.obj", Vertex[0], Texture[0], Nomal[0]);
+	//readTriangleObj("plane3.obj", Vertex[9], Texture[9], Nomal[9]);
+
+
+	//readTriangleObj("cube3_.obj", Vertex[2], Texture[2], Nomal[2]);
+	//readTriangleObj("Sphere2.obj", Vertex[3], Texture[3], Nomal[3]);
+	readTriangleObj("plane3.obj", Vertex[0], Texture[0], Nomal[0]);
+	readTriangleObj("cube.obj", Vertex[1], Texture[1], Nomal[1]);
+	readTriangleObj("cube.obj", Vertex[2], Texture[2], Nomal[2]);
+	//readTriangleObj("Sphere2.obj", Vertex[1], Texture[1], Nomal[1]);
+	//for (int i = 5; i < 9; i++)
+	//{
+	//	readTriangleObj("Sphere2.obj", Vertex[i], Texture[i], Nomal[i]);
+	//}
+	//for (int i = 10; i < 13; i++)
+	//{
+	//	readTriangleObj("Sphere2.obj", Vertex[i], Texture[i], Nomal[i]);
+	//}
+
+	//readTriangleObj("hely.obj", Vertex[13], Texture[13], Nomal[13]);
+	//readTriangleObj("hely.obj", Vertex[14], Texture[14], Nomal[14]);
+	//readTriangleObj("cube3_.obj", Vertex[15], Texture[15], Nomal[15]);
+	//readTriangleObj("cube3_.obj", Vertex[16], Texture[16], Nomal[16]);
+	//readTriangleObj("hely.obj", Vertex[17], Texture[17], Nomal[17]);
+	//readTriangleObj("crown.obj", Vertex[18], Texture[18], Nomal[18]);
+	//readTriangleObj("sword.obj", Vertex[19], Texture[19], Nomal[19]);
+
+	//readTriangleObj("plane3.obj", Vertex[20], Texture[20], Nomal[20]);
+	//readTriangleObj("cube3_.obj", Vertex[21], Texture[21], Nomal[21]);
+	//readTriangleObj("cube3_.obj", Vertex[22], Texture[22], Nomal[22]);
+	//readTriangleObj("cube3_.obj", Vertex[23], Texture[23], Nomal[23]);
+	//readTriangleObj("fallingice.obj", Vertex[24], Texture[24], Nomal[24]);
+}
+
+void drawscene()
+{
+	glUseProgram(shaderID);
+
+	/*for (int i = 0; i < 200; i++)
+	{
+		glBindVertexArray(VAO[3]);
+		unsigned int snowBlendCheck = glGetUniformLocation(shaderID, "Blendcheck");
+		glUniform1i(snowBlendCheck, 2);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, texture[0]);
+		glm::mat4 Snow = glm::mat4(1.0f);
+		Snow = glm::translate(Snow, glm::vec3(SLocation[i].x, SLocation[i].y, SLocation[i].z));
+		Snow = glm::scale(Snow, glm::vec3(0.03f, 0.03f, 0.03f));
+		unsigned int SnowLocation = glGetUniformLocation(shaderID, "modelTransform");
+		glUniformMatrix4fv(SnowLocation, 1, GL_FALSE, glm::value_ptr(Snow));
+		glm::mat4 SnowNormalmodel = glm::mat4(1.0f);
+		SnowNormalmodel = glm::translate(SnowNormalmodel, glm::vec3(SLocation[i].x, SLocation[i].y, SLocation[i].z));
+		unsigned int SnowNormalmodelLocation = glGetUniformLocation(shaderID, "normalTransform");
+		glUniformMatrix4fv(SnowNormalmodelLocation, 1, GL_FALSE, glm::value_ptr(SnowNormalmodel));
+		unsigned int SnowColorLocation = glGetUniformLocation(shaderID, "objColor");
+		glUniform3f(SnowColorLocation, 1, 0.388235, 0.278431);
+		glDrawArrays(GL_TRIANGLES, 0, Vertex[3].size());
+	}
+
+
+	for (int i = 0; i < 80; i++)
+	{
+		glBindVertexArray(VAO[23]);
+		unsigned int StarBlendCheck = glGetUniformLocation(shaderID, "Blendcheck");
+		glUniform1i(StarBlendCheck, 2);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, texture[0]);
+		glm::mat4 Star = glm::mat4(1.0f);
+		Star = glm::translate(Star, glm::vec3(StarLocation[i].x, StarLocation[i].y, StarLocation[i].z));
+		Star = glm::scale(Star, glm::vec3(2.0f, 2.0f, 2.0f));
+		unsigned int StarLocation = glGetUniformLocation(shaderID, "modelTransform");
+		glUniformMatrix4fv(StarLocation, 1, GL_FALSE, glm::value_ptr(Star));
+		glm::mat4 StarNormalmodel = glm::mat4(1.0f);
+		StarNormalmodel = glm::translate(StarNormalmodel, glm::vec3(SLocation[i].x, SLocation[i].y, SLocation[i].z));
+		unsigned int StarNormalmodelLocation = glGetUniformLocation(shaderID, "normalTransform");
+		glUniformMatrix4fv(StarNormalmodelLocation, 1, GL_FALSE, glm::value_ptr(StarNormalmodel));
+		unsigned int StarColorLocation = glGetUniformLocation(shaderID, "objColor");
+		glUniform3f(StarColorLocation, 1, 0.388235, 0.278431);
+		glDrawArrays(GL_TRIANGLES, 0, Vertex[23].size());
+	}*/
+
+	glBindVertexArray(VAO[0]);	// 바닥
+	unsigned int StageBlendCheck = glGetUniformLocation(shaderID, "Blendcheck");
+	glUniform1i(StageBlendCheck, 2);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, texture[0]);
+	glUniform1i(glGetUniformLocation(shaderID, "textureC"), 0);
+	glm::mat4 StageTrasMatrix = glm::mat4(1.0f);
+	StageTrasMatrix = glm::translate(StageTrasMatrix, glm::vec3(0.f, 0.f, 50.f));
+	StageTrasMatrix = glm::rotate(StageTrasMatrix, glm::radians(70.f), glm::vec3(0.0f, 1.0f, 0.0f));
+	StageTrasMatrix = glm::scale(StageTrasMatrix, glm::vec3(100.0, 1.0, 100.0));
+	unsigned int StageTransMatrixLocation = glGetUniformLocation(shaderID, "modelTransform");
+	glUniformMatrix4fv(StageTransMatrixLocation, 1, GL_FALSE, glm::value_ptr(StageTrasMatrix));
+	glm::mat4 StageNormalMatrix = glm::mat4(1.0f);
+	unsigned int StageNormalMatrixLocation = glGetUniformLocation(shaderID, "normalTransform");
+	glUniformMatrix4fv(StageNormalMatrixLocation, 1, GL_FALSE, glm::value_ptr(StageNormalMatrix));
+	glDrawArrays(GL_TRIANGLES, 0, Vertex[0].size());
+
+	for (int i = 0; i < 11; ++i)
+	{
+		glBindVertexArray(VAO[1]);	// 미로
+		unsigned int mazeBlendCheck = glGetUniformLocation(shaderID, "Blendcheck");
+		glUniform1i(mazeBlendCheck, 2);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, texture[1]);
+		glUniform1i(glGetUniformLocation(shaderID, "textureC"), 0);
+		glm::mat4 mazeTrasMatrix = glm::mat4(1.0f);
+		mazeTrasMatrix = glm::rotate(mazeTrasMatrix, glm::radians(70.f), glm::vec3(0.0f, 1.0f, 0.0f));
+		mazeTrasMatrix = glm::translate(mazeTrasMatrix, glm::vec3(-100.f, 10.f, -30.f + i * 10.f));
+		mazeTrasMatrix = glm::scale(mazeTrasMatrix, glm::vec3(10.0, 20.0, 10.0));
+		unsigned int mazeTransMatrixLocation = glGetUniformLocation(shaderID, "modelTransform");
+		glUniformMatrix4fv(mazeTransMatrixLocation, 1, GL_FALSE, glm::value_ptr(mazeTrasMatrix));
+		glm::mat4 mazeNormalMatrix = glm::mat4(1.0f);
+		unsigned int mazeNormalMatrixLocation = glGetUniformLocation(shaderID, "normalTransform");
+		glUniformMatrix4fv(mazeNormalMatrixLocation, 1, GL_FALSE, glm::value_ptr(mazeNormalMatrix));
+		glDrawArrays(GL_TRIANGLES, 0, Vertex[1].size());
+
+		glBindVertexArray(VAO[1]);	// 미로
+		mazeBlendCheck = glGetUniformLocation(shaderID, "Blendcheck");
+		glUniform1i(mazeBlendCheck, 2);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, texture[1]);
+		glUniform1i(glGetUniformLocation(shaderID, "textureC"), 0);
+		mazeTrasMatrix = glm::mat4(1.0f);
+		mazeTrasMatrix = glm::rotate(mazeTrasMatrix, glm::radians(70.f), glm::vec3(0.0f, 1.0f, 0.0f));
+		mazeTrasMatrix = glm::translate(mazeTrasMatrix, glm::vec3(-100.f + i * 10.f, 10.f, 70.f ));
+		mazeTrasMatrix = glm::scale(mazeTrasMatrix, glm::vec3(10.0, 20.0, 10.0));
+		mazeTransMatrixLocation = glGetUniformLocation(shaderID, "modelTransform");
+		glUniformMatrix4fv(mazeTransMatrixLocation, 1, GL_FALSE, glm::value_ptr(mazeTrasMatrix));
+		mazeNormalMatrix = glm::mat4(1.0f);
+		mazeNormalMatrixLocation = glGetUniformLocation(shaderID, "normalTransform");
+		glUniformMatrix4fv(mazeNormalMatrixLocation, 1, GL_FALSE, glm::value_ptr(mazeNormalMatrix));
+		glDrawArrays(GL_TRIANGLES, 0, Vertex[1].size());
+
+		glBindVertexArray(VAO[1]);	// 미로
+		mazeBlendCheck = glGetUniformLocation(shaderID, "Blendcheck");
+		glUniform1i(mazeBlendCheck, 2);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, texture[1]);
+		glUniform1i(glGetUniformLocation(shaderID, "textureC"), 0);
+		mazeTrasMatrix = glm::mat4(1.0f);
+		mazeTrasMatrix = glm::rotate(mazeTrasMatrix, glm::radians(70.f), glm::vec3(0.0f, 1.0f, 0.0f));
+		mazeTrasMatrix = glm::translate(mazeTrasMatrix, glm::vec3(-100.f + i * 10.f, 10.f, -35.f));
+		mazeTrasMatrix = glm::scale(mazeTrasMatrix, glm::vec3(10.0, 20.0, 10.0));
+		mazeTransMatrixLocation = glGetUniformLocation(shaderID, "modelTransform");
+		glUniformMatrix4fv(mazeTransMatrixLocation, 1, GL_FALSE, glm::value_ptr(mazeTrasMatrix));
+		mazeNormalMatrix = glm::mat4(1.0f);
+		mazeNormalMatrixLocation = glGetUniformLocation(shaderID, "normalTransform");
+		glUniformMatrix4fv(mazeNormalMatrixLocation, 1, GL_FALSE, glm::value_ptr(mazeNormalMatrix));
+		glDrawArrays(GL_TRIANGLES, 0, Vertex[1].size());
+	}
+	
+
+	glBindVertexArray(VAO[1]);	// 플레이어
+	unsigned int playerBlendCheck = glGetUniformLocation(shaderID, "Blendcheck");
+	glUniform1i(playerBlendCheck, 2);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, texture[2]);
+	glUniform1i(glGetUniformLocation(shaderID, "textureC"), 0);
+	glm::mat4 playerTrasMatrix = glm::mat4(1.0f);
+	playerTrasMatrix = glm::translate(playerTrasMatrix, glm::vec3(TransList.T_Bodyx, TransList.T_Bodyy + 1.1f, TransList.T_Bodyz));
+	playerTrasMatrix = glm::rotate(playerTrasMatrix, glm::radians(-15.f), glm::vec3(0.0f, 1.0f, 0.0f));
+	playerTrasMatrix = glm::scale(playerTrasMatrix, glm::vec3(1.0, 1.0, 1.0));
+	unsigned int playerTransMatrixLocation = glGetUniformLocation(shaderID, "modelTransform");
+	glUniformMatrix4fv(playerTransMatrixLocation, 1, GL_FALSE, glm::value_ptr(playerTrasMatrix));
+	glm::mat4 playerNormalMatrix = glm::mat4(1.0f);
+	unsigned int playerNormalMatrixLocation = glGetUniformLocation(shaderID, "normalTransform");
+	glUniformMatrix4fv(playerNormalMatrixLocation, 1, GL_FALSE, glm::value_ptr(playerNormalMatrix));
+	glDrawArrays(GL_TRIANGLES, 0, Vertex[2].size());
+
+
+}
+
+
+void initTexture()
+{
+	glGenTextures(9, &texture[0]);
+
+	glBindTexture(GL_TEXTURE_2D, texture[0]);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	int TailWidthImage, TailHeightImage, TailnumberOfChannel;
+	unsigned char* TailData = stbi_load("Texture/tail.jpg", &TailWidthImage, &TailHeightImage, &TailnumberOfChannel, 0);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, TailWidthImage, TailHeightImage, 0, GL_RGB, GL_UNSIGNED_BYTE, TailData);
+	glGenerateMipmap(GL_TEXTURE_2D);
+	stbi_image_free(TailData);
+
+	glBindTexture(GL_TEXTURE_2D, texture[1]);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	int mazeWidthImage, mazeHeightImage, mazenumberOfChannel;
+	unsigned char* mazeData = stbi_load("Texture/Punchimage.jpg", &mazeWidthImage, &mazeHeightImage, &mazenumberOfChannel, 0);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, mazeWidthImage, mazeHeightImage, 0, GL_RGB, GL_UNSIGNED_BYTE, mazeData);
+	glGenerateMipmap(GL_TEXTURE_2D);
+	stbi_image_free(mazeData);
+
+	glBindTexture(GL_TEXTURE_2D, texture[2]);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	int IceWidthImage, IceHeightImage, IcenumberOfChannel;
+	unsigned char* IceData = stbi_load("Texture/fireball.jpg", &IceWidthImage, &IceHeightImage, &IcenumberOfChannel, 0);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, IceWidthImage, IceHeightImage, 0, GL_RGB, GL_UNSIGNED_BYTE, IceData);
+	glGenerateMipmap(GL_TEXTURE_2D);
+	stbi_image_free(IceData);
+
+	/*glBindTexture(GL_TEXTURE_2D, texture[7]);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	int  PotalWidthImage, PotalHeightImage, PotalnumberOfChannel;
+	unsigned char* PotalData = stbi_load("Texture/Potalimage.jpg", &PotalWidthImage, &PotalHeightImage, &PotalnumberOfChannel, 0);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, PotalWidthImage, PotalHeightImage, 0, GL_RGB, GL_UNSIGNED_BYTE, PotalData);
+	glGenerateMipmap(GL_TEXTURE_2D);
+	stbi_image_free(PotalData);
+
+	glBindTexture(GL_TEXTURE_2D, texture[8]);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	int  PunchWidthImage, PunchHeightImage, PunchnumberOfChannel;
+	unsigned char* PunchData = stbi_load("Texture/Punchimage.jpg", &PunchWidthImage, &PunchHeightImage, &PunchnumberOfChannel, 0);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, PunchWidthImage, PunchHeightImage, 0, GL_RGB, GL_UNSIGNED_BYTE, PunchData);
+	glGenerateMipmap(GL_TEXTURE_2D);
+	stbi_image_free(PunchData);*/
+
 }
