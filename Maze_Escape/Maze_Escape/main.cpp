@@ -28,15 +28,15 @@ unsigned int texture[10];
 //call_back
 void MainView();
 void Resize(int w, int h);
-void keyboardCall(unsigned char key, int x, int y);
+void keyboard(unsigned char key, int x, int y);
 
 //func
 void timer(int value);
 void ObjList();
 void drawscene();
 
-int Wwidth = 0;
-int Wheight = 0;
+int WIDTH = 0;
+int HEIGHT = 0;
 
 //Struck
 
@@ -56,8 +56,6 @@ struct Star {
 	float x;
 	float y;
 	float z;
-
-
 };
 Star StarLocation[80];
 Star StarSaveLocation[80];
@@ -203,7 +201,7 @@ int main(int argc, char** argv)
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH);
 	glutInitWindowPosition(0, 0);
-	glutInitWindowSize(Wwidth, Wheight);
+	glutInitWindowSize(WIDTH, HEIGHT);
 	glutCreateWindow("Maze_Escape");
 
 	glewExperimental = GL_TRUE;
@@ -217,14 +215,13 @@ int main(int argc, char** argv)
 	initTexture();
 	glutDisplayFunc(MainView);
 	glutReshapeFunc(Resize);
-	glutKeyboardFunc(keyboardCall);
+	glutKeyboardFunc(keyboard);
 	glutTimerFunc(1, timer, 1);
 	glutMainLoop();
 }
 
 void timer(int value)
-{
-	
+{	
 	glutPostRedisplay();
 	glutTimerFunc(17, timer, value);
 }
@@ -264,18 +261,17 @@ void MainView()
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_CULL_FACE);
 	glUseProgram(shaderID);
-	//------------------------------camera---------------------------------------------
 
 	glm::vec3 ObjectCamerapos = glm::vec3(Camerapos.C_x - TransList.T_Bodyx, Camerapos.C_y + TransList.T_Bodyy, Camerapos.C_z - TransList.T_Bodyz);
 	glm::mat4 CameraSpacepos = glm::mat4(1.0f);
-	CameraSpacepos = glm::rotate(CameraSpacepos, glm::radians(AngleList.anglecamera), glm::vec3(0.0f, 1.0f, 0.0f));//����
+	CameraSpacepos = glm::rotate(CameraSpacepos, glm::radians(AngleList.anglecamera), glm::vec3(0.0f, 1.0f, 0.0f));
 	glm::vec3 Cameraposdir = glm::vec3(CameraSpacepos * glm::vec4(ObjectCamerapos, 1));
 	glm::vec3 ObjectCameraPicking = glm::vec3(TransList.T_Bodyx, TransList.T_Bodyy, TransList.T_Bodyz);
 	glm::vec3 ObjectCameradir = Cameraposdir - ObjectCameraPicking;
 	glm::vec3 Up_y = glm::vec3(0.0f, 1.0f, 0.0f);
 
 	glm::mat4 CameraSpacedir = glm::mat4(1.0f);
-	CameraSpacedir = glm::rotate(CameraSpacedir, glm::radians(AngleList.anglecamera2), glm::vec3(0.0f, 1.0f, 0.0f));//���� 
+	CameraSpacedir = glm::rotate(CameraSpacedir, glm::radians(AngleList.anglecamera2), glm::vec3(0.0f, 1.0f, 0.0f));
 	glm::vec3 Cameradir = glm::vec3(CameraSpacedir * glm::vec4(-ObjectCameradir, 1));
 
 	glm::vec3 Crosspos = glm::normalize(glm::cross(Up_y, glm::normalize(Cameradir)));
@@ -291,14 +287,11 @@ void MainView()
 	unsigned int ViewPositionLocation = glGetUniformLocation(shaderID, "camerapos");
 	glUniform3fv(ViewPositionLocation, 1, glm::value_ptr(CameraView));
 
-	//--------����
 	glm::mat4 Proj = glm::mat4(1.0f);
-	Proj = glm::perspective(glm::radians(60.0f), (float)Wwidth / Wheight, 0.1f, 200.0f);
+	Proj = glm::perspective(glm::radians(60.0f), (float)WIDTH / HEIGHT, 0.1f, 200.0f);
 	unsigned int ModelProjLocation = glGetUniformLocation(shaderID, "projectionTransform");
 	glUniformMatrix4fv(ModelProjLocation, 1, GL_FALSE, &Proj[0][0]);
 
-
-	//--------����
 	glm::mat4 LightPosition = glm::mat4(1.0f);
 	LightPosition = glm::rotate(LightPosition, glm::radians(AngleList.LightRadian), glm::vec3(0.0f, 1.0f, 0.0f));
 	LightPosition = glm::translate(LightPosition, glm::vec3(Scalepos.X, Scalepos.Y, Scalepos.Z - 1.0f));
@@ -317,67 +310,37 @@ void MainView()
 void Resize(int w, int h)
 {
 	glViewport(0, 0, w, h);
-	Wwidth = w;
-	Wheight = h;
+	WIDTH = w;
+	HEIGHT = h;
 }
 
-void keyboardCall(unsigned char key, int x, int y)
+void keyboard(unsigned char key, int x, int y)
 {
 	switch (key)
 	{
 	case'w':
 		Mainswingchk = 1;
-		AngleList.BodyAngle = Movevalue;
-		AngleList.LegAngle = Movevalue;
-		TransList.T_Eyez += Movevalue;
+
 		TransList.T_Bodyz += Movevalue;
-		TransList.T_ArmLegz += Movevalue;
 
-		if (TransList.T_Bodyz > TransList.T_StageZ + 70.0f && TransList.T_Bodyz < TransList.T_StageZ + 80.0f)
-		{
-
-			TransList.T_Eyez += Movevalue;
-			TransList.T_Bodyz += Movevalue;
-			TransList.T_ArmLegz += Movevalue;
-			TransList.T_Bodyy += Movevalue;
-			TransList.T_ArmLegy += Movevalue;
-			TransList.T_Eyey += Movevalue;
-		}
 		break;
 	case's':
 		Mainswingchk = 1;
-		AngleList.BodyAngle = 180.0f;
-		AngleList.LegAngle = 0.0f;
-		TransList.T_Eyez -= Movevalue;
-		TransList.T_Bodyz -= Movevalue;
-		TransList.T_ArmLegz -= Movevalue;
-		TransList.T_Cpaez -= Movevalue;
-		if (TransList.T_Bodyz > TransList.T_StageZ + 70.0f && TransList.T_Bodyz < TransList.T_StageZ + 80.0f)
-		{
 
-			TransList.T_Eyez -= Movevalue;
-			TransList.T_Bodyz -= Movevalue;
-			TransList.T_ArmLegz -= Movevalue;
-			TransList.T_Bodyy -= Movevalue;
-			TransList.T_ArmLegy -= Movevalue;
-			TransList.T_Eyey -= Movevalue;
-		}
+		TransList.T_Bodyz -= Movevalue;
+
 		break;
 	case'a':
 		Mainswingchk = 2;
-		AngleList.BodyAngle = 90.0f;
-		AngleList.LegAngle = 180.0f;
-		TransList.T_Eyex += Movevalue;
+
 		TransList.T_Bodyx += Movevalue;
-		TransList.T_ArmLegx += Movevalue;
+
 		break;
 	case'd':
 		Mainswingchk = 2;
-		AngleList.BodyAngle = 270.0f;
-		AngleList.LegAngle = 180.0f;
-		TransList.T_Eyex -= Movevalue;
+
 		TransList.T_Bodyx -= Movevalue;
-		TransList.T_ArmLegx -= Movevalue;
+
 		break;
 	case'q':
 		glutLeaveMainLoop();
@@ -390,7 +353,7 @@ void InitBuffer()
 {
 	glGenVertexArrays(26, VAO);
 
-	for (int i = 0; i < 2; i++)
+	for (int i = 0; i < 4; i++)
 	{
 		glBindVertexArray(VAO[i]);
 		glGenBuffers(3, &VBO[3 * i]);
@@ -422,6 +385,7 @@ void ObjList()
 	readTriangleObj("plane3.obj", Vertex[0], Texture[0], Nomal[0]);
 	readTriangleObj("cube.obj", Vertex[1], Texture[1], Nomal[1]);
 	readTriangleObj("cube.obj", Vertex[2], Texture[2], Nomal[2]);
+	readTriangleObj("Sphere.obj", Vertex[3], Texture[3], Nomal[3]);
 	//readTriangleObj("Sphere2.obj", Vertex[1], Texture[1], Nomal[1]);
 	//for (int i = 5; i < 9; i++)
 	//{
@@ -502,7 +466,7 @@ void drawscene()
 	glUniform1i(glGetUniformLocation(shaderID, "textureC"), 0);
 	glm::mat4 StageTrasMatrix = glm::mat4(1.0f);
 	StageTrasMatrix = glm::translate(StageTrasMatrix, glm::vec3(0.f, 0.f, 50.f));
-	StageTrasMatrix = glm::rotate(StageTrasMatrix, glm::radians(70.f), glm::vec3(0.0f, 1.0f, 0.0f));
+	//StageTrasMatrix = glm::rotate(StageTrasMatrix, glm::radians(70.f), glm::vec3(0.0f, 1.0f, 0.0f));
 	StageTrasMatrix = glm::scale(StageTrasMatrix, glm::vec3(100.0, 1.0, 100.0));
 	unsigned int StageTransMatrixLocation = glGetUniformLocation(shaderID, "modelTransform");
 	glUniformMatrix4fv(StageTransMatrixLocation, 1, GL_FALSE, glm::value_ptr(StageTrasMatrix));
@@ -520,8 +484,8 @@ void drawscene()
 		glBindTexture(GL_TEXTURE_2D, texture[1]);
 		glUniform1i(glGetUniformLocation(shaderID, "textureC"), 0);
 		glm::mat4 mazeTrasMatrix = glm::mat4(1.0f);
-		mazeTrasMatrix = glm::rotate(mazeTrasMatrix, glm::radians(70.f), glm::vec3(0.0f, 1.0f, 0.0f));
-		mazeTrasMatrix = glm::translate(mazeTrasMatrix, glm::vec3(-100.f, 10.f, -30.f + i * 10.f));
+		//mazeTrasMatrix = glm::rotate(mazeTrasMatrix, glm::radians(70.f), glm::vec3(0.0f, 1.0f, 0.0f));
+		mazeTrasMatrix = glm::translate(mazeTrasMatrix, glm::vec3(-50.f, 10.f, 5.f + i * 10.f));
 		mazeTrasMatrix = glm::scale(mazeTrasMatrix, glm::vec3(10.0, 20.0, 10.0));
 		unsigned int mazeTransMatrixLocation = glGetUniformLocation(shaderID, "modelTransform");
 		glUniformMatrix4fv(mazeTransMatrixLocation, 1, GL_FALSE, glm::value_ptr(mazeTrasMatrix));
@@ -537,8 +501,8 @@ void drawscene()
 		glBindTexture(GL_TEXTURE_2D, texture[1]);
 		glUniform1i(glGetUniformLocation(shaderID, "textureC"), 0);
 		mazeTrasMatrix = glm::mat4(1.0f);
-		mazeTrasMatrix = glm::rotate(mazeTrasMatrix, glm::radians(70.f), glm::vec3(0.0f, 1.0f, 0.0f));
-		mazeTrasMatrix = glm::translate(mazeTrasMatrix, glm::vec3(-100.f + i * 10.f, 10.f, 70.f ));
+		//mazeTrasMatrix = glm::rotate(mazeTrasMatrix, glm::radians(70.f), glm::vec3(0.0f, 1.0f, 0.0f));
+		mazeTrasMatrix = glm::translate(mazeTrasMatrix, glm::vec3(-50.f + i * 10.f, 10.f, 100.f ));
 		mazeTrasMatrix = glm::scale(mazeTrasMatrix, glm::vec3(10.0, 20.0, 10.0));
 		mazeTransMatrixLocation = glGetUniformLocation(shaderID, "modelTransform");
 		glUniformMatrix4fv(mazeTransMatrixLocation, 1, GL_FALSE, glm::value_ptr(mazeTrasMatrix));
@@ -554,8 +518,8 @@ void drawscene()
 		glBindTexture(GL_TEXTURE_2D, texture[1]);
 		glUniform1i(glGetUniformLocation(shaderID, "textureC"), 0);
 		mazeTrasMatrix = glm::mat4(1.0f);
-		mazeTrasMatrix = glm::rotate(mazeTrasMatrix, glm::radians(70.f), glm::vec3(0.0f, 1.0f, 0.0f));
-		mazeTrasMatrix = glm::translate(mazeTrasMatrix, glm::vec3(-100.f + i * 10.f, 10.f, -35.f));
+		//mazeTrasMatrix = glm::rotate(mazeTrasMatrix, glm::radians(70.f), glm::vec3(0.0f, 1.0f, 0.0f));
+		mazeTrasMatrix = glm::translate(mazeTrasMatrix, glm::vec3(50.f, 10.f, 5.f + i * 10.f));
 		mazeTrasMatrix = glm::scale(mazeTrasMatrix, glm::vec3(10.0, 20.0, 10.0));
 		mazeTransMatrixLocation = glGetUniformLocation(shaderID, "modelTransform");
 		glUniformMatrix4fv(mazeTransMatrixLocation, 1, GL_FALSE, glm::value_ptr(mazeTrasMatrix));
@@ -565,17 +529,17 @@ void drawscene()
 		glDrawArrays(GL_TRIANGLES, 0, Vertex[1].size());
 	}
 	
-
-	glBindVertexArray(VAO[1]);	// 플레이어
+#pragma region 플레이어
+	glBindVertexArray(VAO[1]);	// 플레이어 몸통
 	unsigned int playerBlendCheck = glGetUniformLocation(shaderID, "Blendcheck");
 	glUniform1i(playerBlendCheck, 2);
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, texture[2]);
 	glUniform1i(glGetUniformLocation(shaderID, "textureC"), 0);
 	glm::mat4 playerTrasMatrix = glm::mat4(1.0f);
-	playerTrasMatrix = glm::translate(playerTrasMatrix, glm::vec3(TransList.T_Bodyx, TransList.T_Bodyy + 1.1f, TransList.T_Bodyz));
-	playerTrasMatrix = glm::rotate(playerTrasMatrix, glm::radians(-15.f), glm::vec3(0.0f, 1.0f, 0.0f));
-	playerTrasMatrix = glm::scale(playerTrasMatrix, glm::vec3(1.0, 1.0, 1.0));
+	playerTrasMatrix = glm::translate(playerTrasMatrix, glm::vec3(TransList.T_Bodyx, TransList.T_Bodyy + 2.0f, TransList.T_Bodyz));
+	playerTrasMatrix = glm::rotate(playerTrasMatrix, glm::radians(AngleList.angley), glm::vec3(0.0f, 1.0f, 0.0f));
+	playerTrasMatrix = glm::scale(playerTrasMatrix, glm::vec3(1.0, 1.3, 1.0));
 	unsigned int playerTransMatrixLocation = glGetUniformLocation(shaderID, "modelTransform");
 	glUniformMatrix4fv(playerTransMatrixLocation, 1, GL_FALSE, glm::value_ptr(playerTrasMatrix));
 	glm::mat4 playerNormalMatrix = glm::mat4(1.0f);
@@ -583,7 +547,94 @@ void drawscene()
 	glUniformMatrix4fv(playerNormalMatrixLocation, 1, GL_FALSE, glm::value_ptr(playerNormalMatrix));
 	glDrawArrays(GL_TRIANGLES, 0, Vertex[2].size());
 
+	glBindVertexArray(VAO[2]);	// 플레이어 팔
+	playerBlendCheck = glGetUniformLocation(shaderID, "Blendcheck");
+	glUniform1i(playerBlendCheck, 2);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, texture[3]);
+	glUniform1i(glGetUniformLocation(shaderID, "textureC"), 0);
+	playerTrasMatrix = glm::mat4(1.0f);
+	playerTrasMatrix = glm::translate(playerTrasMatrix, glm::vec3(TransList.T_Bodyx + 0.5f, TransList.T_Bodyy + 2.0f, TransList.T_Bodyz));
+	playerTrasMatrix = glm::rotate(playerTrasMatrix, glm::radians(AngleList.angley), glm::vec3(0.0f, 1.0f, 0.0f));
+	playerTrasMatrix = glm::scale(playerTrasMatrix, glm::vec3(0.4f, 0.7f, 0.4f));
+	playerTransMatrixLocation = glGetUniformLocation(shaderID, "modelTransform");
+	glUniformMatrix4fv(playerTransMatrixLocation, 1, GL_FALSE, glm::value_ptr(playerTrasMatrix));
+	playerNormalMatrix = glm::mat4(1.0f);
+	playerNormalMatrixLocation = glGetUniformLocation(shaderID, "normalTransform");
+	glUniformMatrix4fv(playerNormalMatrixLocation, 1, GL_FALSE, glm::value_ptr(playerNormalMatrix));
+	glDrawArrays(GL_TRIANGLES, 0, Vertex[2].size());
 
+	glBindVertexArray(VAO[2]);	// 플레이어 팔
+	playerBlendCheck = glGetUniformLocation(shaderID, "Blendcheck");
+	glUniform1i(playerBlendCheck, 2);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, texture[3]);
+	glUniform1i(glGetUniformLocation(shaderID, "textureC"), 0);
+	playerTrasMatrix = glm::mat4(1.0f);
+	playerTrasMatrix = glm::translate(playerTrasMatrix, glm::vec3(TransList.T_Bodyx - 0.5f, TransList.T_Bodyy + 2.0f, TransList.T_Bodyz));
+	playerTrasMatrix = glm::rotate(playerTrasMatrix, glm::radians(AngleList.angley), glm::vec3(0.0f, 1.0f, 0.0f));
+	playerTrasMatrix = glm::scale(playerTrasMatrix, glm::vec3(0.4f, 0.7f, 0.4f));
+	playerTransMatrixLocation = glGetUniformLocation(shaderID, "modelTransform");
+	glUniformMatrix4fv(playerTransMatrixLocation, 1, GL_FALSE, glm::value_ptr(playerTrasMatrix));
+	playerNormalMatrix = glm::mat4(1.0f);
+	playerNormalMatrixLocation = glGetUniformLocation(shaderID, "normalTransform");
+	glUniformMatrix4fv(playerNormalMatrixLocation, 1, GL_FALSE, glm::value_ptr(playerNormalMatrix));
+	glDrawArrays(GL_TRIANGLES, 0, Vertex[2].size());
+
+	glBindVertexArray(VAO[2]);	// 플레이어 다리
+	playerBlendCheck = glGetUniformLocation(shaderID, "Blendcheck");
+	glUniform1i(playerBlendCheck, 2);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, texture[3]);
+	glUniform1i(glGetUniformLocation(shaderID, "textureC"), 0);
+	playerTrasMatrix = glm::mat4(1.0f);
+	playerTrasMatrix = glm::translate(playerTrasMatrix, glm::vec3(TransList.T_Bodyx - 0.35f, TransList.T_Bodyy + 1.0f, TransList.T_Bodyz));
+	playerTrasMatrix = glm::rotate(playerTrasMatrix, glm::radians(AngleList.angley), glm::vec3(0.0f, 1.0f, 0.0f));
+	playerTrasMatrix = glm::scale(playerTrasMatrix, glm::vec3(0.3f, 0.8f, 0.3f));
+	playerTransMatrixLocation = glGetUniformLocation(shaderID, "modelTransform");
+	glUniformMatrix4fv(playerTransMatrixLocation, 1, GL_FALSE, glm::value_ptr(playerTrasMatrix));
+	playerNormalMatrix = glm::mat4(1.0f);
+	playerNormalMatrixLocation = glGetUniformLocation(shaderID, "normalTransform");
+	glUniformMatrix4fv(playerNormalMatrixLocation, 1, GL_FALSE, glm::value_ptr(playerNormalMatrix));
+	glDrawArrays(GL_TRIANGLES, 0, Vertex[2].size());
+
+	glBindVertexArray(VAO[2]);	// 플레이어 다리
+	playerBlendCheck = glGetUniformLocation(shaderID, "Blendcheck");
+	glUniform1i(playerBlendCheck, 2);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, texture[3]);
+	glUniform1i(glGetUniformLocation(shaderID, "textureC"), 0);
+	playerTrasMatrix = glm::mat4(1.0f);
+	playerTrasMatrix = glm::translate(playerTrasMatrix, glm::vec3(TransList.T_Bodyx + 0.35f, TransList.T_Bodyy + 1.0f, TransList.T_Bodyz));
+	playerTrasMatrix = glm::rotate(playerTrasMatrix, glm::radians(AngleList.angley), glm::vec3(0.0f, 1.0f, 0.0f));
+	playerTrasMatrix = glm::scale(playerTrasMatrix, glm::vec3(0.3f, 0.8f, 0.3f));
+	playerTransMatrixLocation = glGetUniformLocation(shaderID, "modelTransform");
+	glUniformMatrix4fv(playerTransMatrixLocation, 1, GL_FALSE, glm::value_ptr(playerTrasMatrix));
+	playerNormalMatrix = glm::mat4(1.0f);
+	playerNormalMatrixLocation = glGetUniformLocation(shaderID, "normalTransform");
+	glUniformMatrix4fv(playerNormalMatrixLocation, 1, GL_FALSE, glm::value_ptr(playerNormalMatrix));
+	glDrawArrays(GL_TRIANGLES, 0, Vertex[2].size());
+
+	glBindVertexArray(VAO[3]);	// 플레이어 머리
+	playerBlendCheck = glGetUniformLocation(shaderID, "Blendcheck");
+	glUniform1i(playerBlendCheck, 2);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, texture[3]);
+	glUniform1i(glGetUniformLocation(shaderID, "textureC"), 0);
+	playerTrasMatrix = glm::mat4(1.0f);
+	playerTrasMatrix = glm::translate(playerTrasMatrix, glm::vec3(TransList.T_Bodyx, TransList.T_Bodyy + 2.7f, TransList.T_Bodyz));
+	playerTrasMatrix = glm::rotate(playerTrasMatrix, glm::radians(AngleList.angley), glm::vec3(0.0f, 1.0f, 0.0f));
+	playerTrasMatrix = glm::scale(playerTrasMatrix, glm::vec3(0.4f, 0.4f, 0.4f));
+	playerTransMatrixLocation = glGetUniformLocation(shaderID, "modelTransform");
+	glUniformMatrix4fv(playerTransMatrixLocation, 1, GL_FALSE, glm::value_ptr(playerTrasMatrix));
+	playerNormalMatrix = glm::mat4(1.0f);
+	playerNormalMatrixLocation = glGetUniformLocation(shaderID, "normalTransform");
+	glUniformMatrix4fv(playerNormalMatrixLocation, 1, GL_FALSE, glm::value_ptr(playerNormalMatrix));
+	glDrawArrays(GL_TRIANGLES, 0, Vertex[3].size());
+
+	
+
+#pragma endregion 플레이어
 }
 
 
@@ -619,10 +670,21 @@ void initTexture()
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	int IceWidthImage, IceHeightImage, IcenumberOfChannel;
-	unsigned char* IceData = stbi_load("Texture/fireball.jpg", &IceWidthImage, &IceHeightImage, &IcenumberOfChannel, 0);
+	unsigned char* IceData = stbi_load("Texture/Hely.jpg", &IceWidthImage, &IceHeightImage, &IcenumberOfChannel, 0);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, IceWidthImage, IceHeightImage, 0, GL_RGB, GL_UNSIGNED_BYTE, IceData);
 	glGenerateMipmap(GL_TEXTURE_2D);
 	stbi_image_free(IceData);
+
+	glBindTexture(GL_TEXTURE_2D, texture[3]);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	int fireWidthImage, fireHeightImage, firenumberOfChannel;
+	unsigned char* fireData = stbi_load("Texture/fireball.jpg", &fireWidthImage, &fireHeightImage, &firenumberOfChannel, 0);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, fireWidthImage, fireHeightImage, 0, GL_RGB, GL_UNSIGNED_BYTE, fireData);
+	glGenerateMipmap(GL_TEXTURE_2D);
+	stbi_image_free(fireData);
 
 	/*glBindTexture(GL_TEXTURE_2D, texture[7]);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
