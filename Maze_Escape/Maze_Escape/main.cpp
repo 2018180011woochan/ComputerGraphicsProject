@@ -193,7 +193,7 @@ glm::vec3 lightPos = glm::vec3(0, 3.0f, 2.5f);
 glm::vec3 lightColor = glm::vec3(1.4f, 1.3f, 1.3f);
 glm::vec3 Cameraposdir = glm::vec3(0.0f);
 glm::vec3 Cameradir = glm::vec3(0.0f);
-float Movevalue = 0.2f;
+float Movevalue = 0.8f;
 
 int main(int argc, char** argv)
 {
@@ -458,23 +458,28 @@ void drawscene()
 		glDrawArrays(GL_TRIANGLES, 0, Vertex[23].size());
 	}*/
 
-	glBindVertexArray(VAO[0]);	// 바닥
-	unsigned int StageBlendCheck = glGetUniformLocation(shaderID, "Blendcheck");
-	glUniform1i(StageBlendCheck, 2);
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, texture[0]);
-	glUniform1i(glGetUniformLocation(shaderID, "textureC"), 0);
-	glm::mat4 StageTrasMatrix = glm::mat4(1.0f);
-	StageTrasMatrix = glm::translate(StageTrasMatrix, glm::vec3(0.f, 0.f, 50.f));
-	//StageTrasMatrix = glm::rotate(StageTrasMatrix, glm::radians(70.f), glm::vec3(0.0f, 1.0f, 0.0f));
-	StageTrasMatrix = glm::scale(StageTrasMatrix, glm::vec3(100.0, 1.0, 100.0));
-	unsigned int StageTransMatrixLocation = glGetUniformLocation(shaderID, "modelTransform");
-	glUniformMatrix4fv(StageTransMatrixLocation, 1, GL_FALSE, glm::value_ptr(StageTrasMatrix));
-	glm::mat4 StageNormalMatrix = glm::mat4(1.0f);
-	unsigned int StageNormalMatrixLocation = glGetUniformLocation(shaderID, "normalTransform");
-	glUniformMatrix4fv(StageNormalMatrixLocation, 1, GL_FALSE, glm::value_ptr(StageNormalMatrix));
-	glDrawArrays(GL_TRIANGLES, 0, Vertex[0].size());
-
+	for (int i = 0; i < 20; ++i) {
+		for (int j = 0; j < 20; ++j) {
+			glBindVertexArray(VAO[0]);	// 바닥
+			unsigned int StageBlendCheck = glGetUniformLocation(shaderID, "Blendcheck");
+			glUniform1i(StageBlendCheck, 2);
+			glActiveTexture(GL_TEXTURE0);
+			glBindTexture(GL_TEXTURE_2D, texture[0]);
+			glUniform1i(glGetUniformLocation(shaderID, "textureC"), 0);
+			glm::mat4 StageTrasMatrix = glm::mat4(1.0f);
+			StageTrasMatrix = glm::translate(StageTrasMatrix, glm::vec3(-50.f + 10.f * i, 0.f, 0.f + 10.f * j));
+			//StageTrasMatrix = glm::rotate(StageTrasMatrix, glm::radians(70.f), glm::vec3(0.0f, 1.0f, 0.0f));
+			StageTrasMatrix = glm::scale(StageTrasMatrix, glm::vec3(10.0, 1.0, 10.0));
+			unsigned int StageTransMatrixLocation = glGetUniformLocation(shaderID, "modelTransform");
+			glUniformMatrix4fv(StageTransMatrixLocation, 1, GL_FALSE, glm::value_ptr(StageTrasMatrix));
+			glm::mat4 StageNormalMatrix = glm::mat4(1.0f);
+			unsigned int StageNormalMatrixLocation = glGetUniformLocation(shaderID, "normalTransform");
+			glUniformMatrix4fv(StageNormalMatrixLocation, 1, GL_FALSE, glm::value_ptr(StageNormalMatrix));
+			glDrawArrays(GL_TRIANGLES, 0, Vertex[0].size());
+		}
+	}
+	
+#pragma region 미로
 	for (int i = 0; i < 11; ++i)
 	{
 		glBindVertexArray(VAO[1]);	// 미로
@@ -484,8 +489,7 @@ void drawscene()
 		glBindTexture(GL_TEXTURE_2D, texture[1]);
 		glUniform1i(glGetUniformLocation(shaderID, "textureC"), 0);
 		glm::mat4 mazeTrasMatrix = glm::mat4(1.0f);
-		//mazeTrasMatrix = glm::rotate(mazeTrasMatrix, glm::radians(70.f), glm::vec3(0.0f, 1.0f, 0.0f));
-		mazeTrasMatrix = glm::translate(mazeTrasMatrix, glm::vec3(-50.f, 10.f, 5.f + i * 10.f));
+		mazeTrasMatrix = glm::translate(mazeTrasMatrix, glm::vec3(-20.f, 10.f, 5.f + i * 10.f));
 		mazeTrasMatrix = glm::scale(mazeTrasMatrix, glm::vec3(10.0, 20.0, 10.0));
 		unsigned int mazeTransMatrixLocation = glGetUniformLocation(shaderID, "modelTransform");
 		glUniformMatrix4fv(mazeTransMatrixLocation, 1, GL_FALSE, glm::value_ptr(mazeTrasMatrix));
@@ -502,7 +506,26 @@ void drawscene()
 		glUniform1i(glGetUniformLocation(shaderID, "textureC"), 0);
 		mazeTrasMatrix = glm::mat4(1.0f);
 		//mazeTrasMatrix = glm::rotate(mazeTrasMatrix, glm::radians(70.f), glm::vec3(0.0f, 1.0f, 0.0f));
-		mazeTrasMatrix = glm::translate(mazeTrasMatrix, glm::vec3(-50.f + i * 10.f, 10.f, 100.f ));
+		mazeTrasMatrix = glm::translate(mazeTrasMatrix, glm::vec3(-10.f + i * 10.f, 10.f, 100.f ));
+		mazeTrasMatrix = glm::scale(mazeTrasMatrix, glm::vec3(10.0, 20.0, 10.0));
+		mazeTransMatrixLocation = glGetUniformLocation(shaderID, "modelTransform");
+		glUniformMatrix4fv(mazeTransMatrixLocation, 1, GL_FALSE, glm::value_ptr(mazeTrasMatrix));
+		mazeNormalMatrix = glm::mat4(1.0f);
+		mazeNormalMatrixLocation = glGetUniformLocation(shaderID, "normalTransform");
+		glUniformMatrix4fv(mazeNormalMatrixLocation, 1, GL_FALSE, glm::value_ptr(mazeNormalMatrix));
+		glDrawArrays(GL_TRIANGLES, 0, Vertex[1].size());
+
+		if (i > 5)
+			continue;
+		glBindVertexArray(VAO[1]);	// 미로
+		mazeBlendCheck = glGetUniformLocation(shaderID, "Blendcheck");
+		glUniform1i(mazeBlendCheck, 2);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, texture[1]);
+		glUniform1i(glGetUniformLocation(shaderID, "textureC"), 0);
+		mazeTrasMatrix = glm::mat4(1.0f);
+		//mazeTrasMatrix = glm::rotate(mazeTrasMatrix, glm::radians(70.f), glm::vec3(0.0f, 1.0f, 0.0f));
+		mazeTrasMatrix = glm::translate(mazeTrasMatrix, glm::vec3(20.f, 10.f, 5.f + i * 10.f));
 		mazeTrasMatrix = glm::scale(mazeTrasMatrix, glm::vec3(10.0, 20.0, 10.0));
 		mazeTransMatrixLocation = glGetUniformLocation(shaderID, "modelTransform");
 		glUniformMatrix4fv(mazeTransMatrixLocation, 1, GL_FALSE, glm::value_ptr(mazeTrasMatrix));
@@ -519,7 +542,7 @@ void drawscene()
 		glUniform1i(glGetUniformLocation(shaderID, "textureC"), 0);
 		mazeTrasMatrix = glm::mat4(1.0f);
 		//mazeTrasMatrix = glm::rotate(mazeTrasMatrix, glm::radians(70.f), glm::vec3(0.0f, 1.0f, 0.0f));
-		mazeTrasMatrix = glm::translate(mazeTrasMatrix, glm::vec3(50.f, 10.f, 5.f + i * 10.f));
+		mazeTrasMatrix = glm::translate(mazeTrasMatrix, glm::vec3(60.f, 10.f, 40.f + i * 10.f));
 		mazeTrasMatrix = glm::scale(mazeTrasMatrix, glm::vec3(10.0, 20.0, 10.0));
 		mazeTransMatrixLocation = glGetUniformLocation(shaderID, "modelTransform");
 		glUniformMatrix4fv(mazeTransMatrixLocation, 1, GL_FALSE, glm::value_ptr(mazeTrasMatrix));
@@ -528,7 +551,8 @@ void drawscene()
 		glUniformMatrix4fv(mazeNormalMatrixLocation, 1, GL_FALSE, glm::value_ptr(mazeNormalMatrix));
 		glDrawArrays(GL_TRIANGLES, 0, Vertex[1].size());
 	}
-	
+#pragma endregion 미로
+
 #pragma region 플레이어
 	glBindVertexArray(VAO[1]);	// 플레이어 몸통
 	unsigned int playerBlendCheck = glGetUniformLocation(shaderID, "Blendcheck");
@@ -632,8 +656,6 @@ void drawscene()
 	glUniformMatrix4fv(playerNormalMatrixLocation, 1, GL_FALSE, glm::value_ptr(playerNormalMatrix));
 	glDrawArrays(GL_TRIANGLES, 0, Vertex[3].size());
 
-	
-
 #pragma endregion 플레이어
 }
 
@@ -648,7 +670,7 @@ void initTexture()
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	int TailWidthImage, TailHeightImage, TailnumberOfChannel;
-	unsigned char* TailData = stbi_load("Texture/tail.jpg", &TailWidthImage, &TailHeightImage, &TailnumberOfChannel, 0);
+	unsigned char* TailData = stbi_load("Texture/grass.jpg", &TailWidthImage, &TailHeightImage, &TailnumberOfChannel, 0);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, TailWidthImage, TailHeightImage, 0, GL_RGB, GL_UNSIGNED_BYTE, TailData);
 	glGenerateMipmap(GL_TEXTURE_2D);
 	stbi_image_free(TailData);
