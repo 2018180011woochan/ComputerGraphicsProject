@@ -185,6 +185,9 @@ vector<glm::vec4> Nomal[26];
 vector<glm::vec2> Texture[26];
 
 
+enum PLAYERDIR {UP, DOWN, LEFT, RIGHT, END};
+PLAYERDIR _dir = PLAYERDIR::UP;
+
 int Mainswingchk = 1;
 
 glm::vec3 objC = glm::vec3(0, 0, 0);
@@ -222,6 +225,14 @@ int main(int argc, char** argv)
 
 void timer(int value)
 {	
+	if (_dir == PLAYERDIR::UP)
+		AngleList.angley = 0.f;
+	if (_dir == PLAYERDIR::DOWN)
+		AngleList.angley = 180.f;
+	if (_dir == PLAYERDIR::RIGHT)
+		AngleList.angley = 90.f;
+	if (_dir == PLAYERDIR::LEFT)
+		AngleList.angley = -90.f;
 	glutPostRedisplay();
 	glutTimerFunc(17, timer, value);
 }
@@ -319,26 +330,21 @@ void keyboard(unsigned char key, int x, int y)
 	switch (key)
 	{
 	case'w':
-		Mainswingchk = 1;
-
+		_dir = PLAYERDIR::UP;
 		TransList.T_Bodyz += Movevalue;
-
 		break;
 	case's':
-		Mainswingchk = 1;
-
+		_dir = PLAYERDIR::DOWN;
 		TransList.T_Bodyz -= Movevalue;
 
 		break;
 	case'a':
-		Mainswingchk = 2;
-
+		_dir = PLAYERDIR::LEFT;
 		TransList.T_Bodyx += Movevalue;
 
 		break;
 	case'd':
-		Mainswingchk = 2;
-
+		_dir = PLAYERDIR::RIGHT;
 		TransList.T_Bodyx -= Movevalue;
 
 		break;
@@ -627,7 +633,10 @@ void drawscene()
 	glBindTexture(GL_TEXTURE_2D, texture[3]);
 	glUniform1i(glGetUniformLocation(shaderID, "textureC"), 0);
 	playerTrasMatrix = glm::mat4(1.0f);
-	playerTrasMatrix = glm::translate(playerTrasMatrix, glm::vec3(TransList.T_Bodyx + 0.5f, TransList.T_Bodyy + 2.0f, TransList.T_Bodyz));
+	if (_dir == PLAYERDIR::UP || _dir == PLAYERDIR::DOWN)
+		playerTrasMatrix = glm::translate(playerTrasMatrix, glm::vec3(TransList.T_Bodyx + 0.5f, TransList.T_Bodyy + 2.0f, TransList.T_Bodyz));
+	if (_dir == PLAYERDIR::LEFT || _dir == PLAYERDIR::RIGHT)
+		playerTrasMatrix = glm::translate(playerTrasMatrix, glm::vec3(TransList.T_Bodyx, TransList.T_Bodyy + 2.0f, TransList.T_Bodyz + 0.5f));
 	playerTrasMatrix = glm::rotate(playerTrasMatrix, glm::radians(AngleList.angley), glm::vec3(0.0f, 1.0f, 0.0f));
 	playerTrasMatrix = glm::scale(playerTrasMatrix, glm::vec3(0.4f, 0.7f, 0.4f));
 	playerTransMatrixLocation = glGetUniformLocation(shaderID, "modelTransform");
@@ -644,7 +653,10 @@ void drawscene()
 	glBindTexture(GL_TEXTURE_2D, texture[3]);
 	glUniform1i(glGetUniformLocation(shaderID, "textureC"), 0);
 	playerTrasMatrix = glm::mat4(1.0f);
-	playerTrasMatrix = glm::translate(playerTrasMatrix, glm::vec3(TransList.T_Bodyx - 0.5f, TransList.T_Bodyy + 2.0f, TransList.T_Bodyz));
+	if (_dir == PLAYERDIR::UP || _dir == PLAYERDIR::DOWN)
+		playerTrasMatrix = glm::translate(playerTrasMatrix, glm::vec3(TransList.T_Bodyx - 0.5f, TransList.T_Bodyy + 2.0f, TransList.T_Bodyz));
+	if (_dir == PLAYERDIR::LEFT || _dir == PLAYERDIR::RIGHT)
+		playerTrasMatrix = glm::translate(playerTrasMatrix, glm::vec3(TransList.T_Bodyx, TransList.T_Bodyy + 2.0f, TransList.T_Bodyz - 0.5f));
 	playerTrasMatrix = glm::rotate(playerTrasMatrix, glm::radians(AngleList.angley), glm::vec3(0.0f, 1.0f, 0.0f));
 	playerTrasMatrix = glm::scale(playerTrasMatrix, glm::vec3(0.4f, 0.7f, 0.4f));
 	playerTransMatrixLocation = glGetUniformLocation(shaderID, "modelTransform");
@@ -661,7 +673,10 @@ void drawscene()
 	glBindTexture(GL_TEXTURE_2D, texture[3]);
 	glUniform1i(glGetUniformLocation(shaderID, "textureC"), 0);
 	playerTrasMatrix = glm::mat4(1.0f);
-	playerTrasMatrix = glm::translate(playerTrasMatrix, glm::vec3(TransList.T_Bodyx - 0.35f, TransList.T_Bodyy + 1.0f, TransList.T_Bodyz));
+	if (_dir == PLAYERDIR::UP || _dir == PLAYERDIR::DOWN)
+		playerTrasMatrix = glm::translate(playerTrasMatrix, glm::vec3(TransList.T_Bodyx - 0.35f, TransList.T_Bodyy + 1.0f, TransList.T_Bodyz));
+	if (_dir == PLAYERDIR::LEFT || _dir == PLAYERDIR::RIGHT)
+		playerTrasMatrix = glm::translate(playerTrasMatrix, glm::vec3(TransList.T_Bodyx, TransList.T_Bodyy + 1.0f, TransList.T_Bodyz - 0.35f));
 	playerTrasMatrix = glm::rotate(playerTrasMatrix, glm::radians(AngleList.angley), glm::vec3(0.0f, 1.0f, 0.0f));
 	playerTrasMatrix = glm::scale(playerTrasMatrix, glm::vec3(0.3f, 0.8f, 0.3f));
 	playerTransMatrixLocation = glGetUniformLocation(shaderID, "modelTransform");
@@ -678,7 +693,10 @@ void drawscene()
 	glBindTexture(GL_TEXTURE_2D, texture[3]);
 	glUniform1i(glGetUniformLocation(shaderID, "textureC"), 0);
 	playerTrasMatrix = glm::mat4(1.0f);
-	playerTrasMatrix = glm::translate(playerTrasMatrix, glm::vec3(TransList.T_Bodyx + 0.35f, TransList.T_Bodyy + 1.0f, TransList.T_Bodyz));
+	if (_dir == PLAYERDIR::UP || _dir == PLAYERDIR::DOWN)
+		playerTrasMatrix = glm::translate(playerTrasMatrix, glm::vec3(TransList.T_Bodyx + 0.35f, TransList.T_Bodyy + 1.0f, TransList.T_Bodyz));
+	if (_dir == PLAYERDIR::LEFT || _dir == PLAYERDIR::RIGHT)
+		playerTrasMatrix = glm::translate(playerTrasMatrix, glm::vec3(TransList.T_Bodyx, TransList.T_Bodyy + 1.0f, TransList.T_Bodyz + 0.35f));
 	playerTrasMatrix = glm::rotate(playerTrasMatrix, glm::radians(AngleList.angley), glm::vec3(0.0f, 1.0f, 0.0f));
 	playerTrasMatrix = glm::scale(playerTrasMatrix, glm::vec3(0.3f, 0.8f, 0.3f));
 	playerTransMatrixLocation = glGetUniformLocation(shaderID, "modelTransform");
