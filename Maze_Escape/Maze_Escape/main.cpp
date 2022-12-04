@@ -480,7 +480,7 @@ void drawscene()
 	}
 	
 #pragma region 미로
-	for (int i = 0; i < 11; ++i)
+	for (int i = 0; i < 20; ++i)
 	{
 		glBindVertexArray(VAO[1]);	// 미로
 		unsigned int mazeBlendCheck = glGetUniformLocation(shaderID, "Blendcheck");
@@ -489,7 +489,7 @@ void drawscene()
 		glBindTexture(GL_TEXTURE_2D, texture[1]);
 		glUniform1i(glGetUniformLocation(shaderID, "textureC"), 0);
 		glm::mat4 mazeTrasMatrix = glm::mat4(1.0f);
-		mazeTrasMatrix = glm::translate(mazeTrasMatrix, glm::vec3(-20.f, 10.f, 5.f + i * 10.f));
+		mazeTrasMatrix = glm::translate(mazeTrasMatrix, glm::vec3(140.f, 10.f, 5.f + i * 10.f));
 		mazeTrasMatrix = glm::scale(mazeTrasMatrix, glm::vec3(10.0, 20.0, 10.0));
 		unsigned int mazeTransMatrixLocation = glGetUniformLocation(shaderID, "modelTransform");
 		glUniformMatrix4fv(mazeTransMatrixLocation, 1, GL_FALSE, glm::value_ptr(mazeTrasMatrix));
@@ -505,7 +505,40 @@ void drawscene()
 		glBindTexture(GL_TEXTURE_2D, texture[1]);
 		glUniform1i(glGetUniformLocation(shaderID, "textureC"), 0);
 		mazeTrasMatrix = glm::mat4(1.0f);
-		//mazeTrasMatrix = glm::rotate(mazeTrasMatrix, glm::radians(70.f), glm::vec3(0.0f, 1.0f, 0.0f));
+		mazeTrasMatrix = glm::translate(mazeTrasMatrix, glm::vec3(-10.f + i * 10.f, 10.f, 180.f));
+		mazeTrasMatrix = glm::scale(mazeTrasMatrix, glm::vec3(10.0, 20.0, 10.0));
+		mazeTransMatrixLocation = glGetUniformLocation(shaderID, "modelTransform");
+		glUniformMatrix4fv(mazeTransMatrixLocation, 1, GL_FALSE, glm::value_ptr(mazeTrasMatrix));
+		mazeNormalMatrix = glm::mat4(1.0f);
+		mazeNormalMatrixLocation = glGetUniformLocation(shaderID, "normalTransform");
+		glUniformMatrix4fv(mazeNormalMatrixLocation, 1, GL_FALSE, glm::value_ptr(mazeNormalMatrix));
+		glDrawArrays(GL_TRIANGLES, 0, Vertex[1].size());
+
+		if (i > 11)
+			continue;
+		glBindVertexArray(VAO[1]);	// 미로
+		mazeBlendCheck = glGetUniformLocation(shaderID, "Blendcheck");
+		glUniform1i(mazeBlendCheck, 2);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, texture[1]);
+		glUniform1i(glGetUniformLocation(shaderID, "textureC"), 0);
+		mazeTrasMatrix = glm::mat4(1.0f);
+		mazeTrasMatrix = glm::translate(mazeTrasMatrix, glm::vec3(-20.f, 10.f, 5.f + i * 10.f));
+		mazeTrasMatrix = glm::scale(mazeTrasMatrix, glm::vec3(10.0, 20.0, 10.0));
+		mazeTransMatrixLocation = glGetUniformLocation(shaderID, "modelTransform");
+		glUniformMatrix4fv(mazeTransMatrixLocation, 1, GL_FALSE, glm::value_ptr(mazeTrasMatrix));
+		mazeNormalMatrix = glm::mat4(1.0f);
+		mazeNormalMatrixLocation = glGetUniformLocation(shaderID, "normalTransform");
+		glUniformMatrix4fv(mazeNormalMatrixLocation, 1, GL_FALSE, glm::value_ptr(mazeNormalMatrix));
+		glDrawArrays(GL_TRIANGLES, 0, Vertex[1].size());
+
+		glBindVertexArray(VAO[1]);	// 미로
+		mazeBlendCheck = glGetUniformLocation(shaderID, "Blendcheck");
+		glUniform1i(mazeBlendCheck, 2);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, texture[1]);
+		glUniform1i(glGetUniformLocation(shaderID, "textureC"), 0);
+		mazeTrasMatrix = glm::mat4(1.0f);
 		mazeTrasMatrix = glm::translate(mazeTrasMatrix, glm::vec3(-10.f + i * 10.f, 10.f, 100.f ));
 		mazeTrasMatrix = glm::scale(mazeTrasMatrix, glm::vec3(10.0, 20.0, 10.0));
 		mazeTransMatrixLocation = glGetUniformLocation(shaderID, "modelTransform");
@@ -514,6 +547,24 @@ void drawscene()
 		mazeNormalMatrixLocation = glGetUniformLocation(shaderID, "normalTransform");
 		glUniformMatrix4fv(mazeNormalMatrixLocation, 1, GL_FALSE, glm::value_ptr(mazeNormalMatrix));
 		glDrawArrays(GL_TRIANGLES, 0, Vertex[1].size());
+
+		glBindVertexArray(VAO[1]);	// 미로
+		mazeBlendCheck = glGetUniformLocation(shaderID, "Blendcheck");
+		glUniform1i(mazeBlendCheck, 2);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, texture[1]);
+		glUniform1i(glGetUniformLocation(shaderID, "textureC"), 0);
+		mazeTrasMatrix = glm::mat4(1.0f);
+		mazeTrasMatrix = glm::translate(mazeTrasMatrix, glm::vec3(30.f + i * 10.f, 10.f, 0.f));
+		mazeTrasMatrix = glm::scale(mazeTrasMatrix, glm::vec3(10.0, 20.0, 10.0));
+		mazeTransMatrixLocation = glGetUniformLocation(shaderID, "modelTransform");
+		glUniformMatrix4fv(mazeTransMatrixLocation, 1, GL_FALSE, glm::value_ptr(mazeTrasMatrix));
+		mazeNormalMatrix = glm::mat4(1.0f);
+		mazeNormalMatrixLocation = glGetUniformLocation(shaderID, "normalTransform");
+		glUniformMatrix4fv(mazeNormalMatrixLocation, 1, GL_FALSE, glm::value_ptr(mazeNormalMatrix));
+		glDrawArrays(GL_TRIANGLES, 0, Vertex[1].size());
+
+		
 
 		if (i > 5)
 			continue;
@@ -524,7 +575,6 @@ void drawscene()
 		glBindTexture(GL_TEXTURE_2D, texture[1]);
 		glUniform1i(glGetUniformLocation(shaderID, "textureC"), 0);
 		mazeTrasMatrix = glm::mat4(1.0f);
-		//mazeTrasMatrix = glm::rotate(mazeTrasMatrix, glm::radians(70.f), glm::vec3(0.0f, 1.0f, 0.0f));
 		mazeTrasMatrix = glm::translate(mazeTrasMatrix, glm::vec3(20.f, 10.f, 5.f + i * 10.f));
 		mazeTrasMatrix = glm::scale(mazeTrasMatrix, glm::vec3(10.0, 20.0, 10.0));
 		mazeTransMatrixLocation = glGetUniformLocation(shaderID, "modelTransform");
@@ -541,7 +591,6 @@ void drawscene()
 		glBindTexture(GL_TEXTURE_2D, texture[1]);
 		glUniform1i(glGetUniformLocation(shaderID, "textureC"), 0);
 		mazeTrasMatrix = glm::mat4(1.0f);
-		//mazeTrasMatrix = glm::rotate(mazeTrasMatrix, glm::radians(70.f), glm::vec3(0.0f, 1.0f, 0.0f));
 		mazeTrasMatrix = glm::translate(mazeTrasMatrix, glm::vec3(60.f, 10.f, 40.f + i * 10.f));
 		mazeTrasMatrix = glm::scale(mazeTrasMatrix, glm::vec3(10.0, 20.0, 10.0));
 		mazeTransMatrixLocation = glGetUniformLocation(shaderID, "modelTransform");
