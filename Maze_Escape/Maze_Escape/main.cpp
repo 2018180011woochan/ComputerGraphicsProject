@@ -74,28 +74,17 @@ struct Angle
 	float angle = 0.0f;
 	float anglex = 0.0f;
 	float angley = 0.0f;
-	float AngleTrap2 = 00.0f;
-	float AngleTrap = 0.0f;
-	float Radian = 0.0f;
-	//---------------------
-	float AngleRevolx = 45.0f;
-	float AngleRevoly = 45.0f;
-	//----------------------
+
+	float LeftArmAngle = 0.0f;
+	float RightArmAngle = 0.0f;
+	float GunAngle = 0.0f;
+	float SwordAngle = 0.0f;
+
 	float anglecamera = 160.0f;
 	float anglecamera2 = 0.0f;
-	float ObjAngle = 20.0f;
-	//------------------
+
 	float LightRadian = 10.0f;
-	//------------------
-	float BodyAngle = 0.0f;
-	float ArmAngle = 45.0f;
-	float LegAngle = 0.0f;
-	float MainSwing1 = 0.0f;
-	float MainSwing2 = 0.0f;
-	float StageAngle = 0.0f;
-	float StageAngle2 = 0.0f;
-	float EyeAngle = 0.0f;
-	float CpaeAngle = 0.0f;
+
 }AngleList;
 
 //scale
@@ -186,8 +175,9 @@ vector<glm::vec2> Texture[26];
 
 
 enum PLAYERDIR {UP, DOWN, LEFT, RIGHT, END};
+enum WEAPON {SWORD, GUN};
 PLAYERDIR _dir = PLAYERDIR::UP;
-
+WEAPON _weapon = WEAPON::GUN;
 int Mainswingchk = 1;
 
 glm::vec3 objC = glm::vec3(0, 0, 0);
@@ -332,21 +322,32 @@ void keyboard(unsigned char key, int x, int y)
 	case'w':
 		_dir = PLAYERDIR::UP;
 		TransList.T_Bodyz += Movevalue;
+		AngleList.GunAngle = 0.0f;
+		AngleList.SwordAngle = 0.0f;
 		break;
 	case's':
 		_dir = PLAYERDIR::DOWN;
 		TransList.T_Bodyz -= Movevalue;
-
+		AngleList.GunAngle = 180.f;
+		AngleList.SwordAngle = 180.f;
 		break;
 	case'a':
 		_dir = PLAYERDIR::LEFT;
 		TransList.T_Bodyx += Movevalue;
-
+		AngleList.GunAngle = 90.f;
+		AngleList.SwordAngle = 90.f;
 		break;
 	case'd':
 		_dir = PLAYERDIR::RIGHT;
 		TransList.T_Bodyx -= Movevalue;
-
+		AngleList.GunAngle = 270.f;
+		AngleList.SwordAngle = 270.f;
+		break;
+	case '1':
+		_weapon = WEAPON::GUN;
+		break;
+	case '2':
+		_weapon = WEAPON::SWORD;
 		break;
 	case'q':
 		glutLeaveMainLoop();
@@ -359,7 +360,7 @@ void InitBuffer()
 {
 	glGenVertexArrays(26, VAO);
 
-	for (int i = 0; i < 4; i++)
+	for (int i = 0; i <= 5; i++)
 	{
 		glBindVertexArray(VAO[i]);
 		glGenBuffers(3, &VBO[3 * i]);
@@ -392,6 +393,8 @@ void ObjList()
 	readTriangleObj("cube.obj", Vertex[1], Texture[1], Nomal[1]);
 	readTriangleObj("cube.obj", Vertex[2], Texture[2], Nomal[2]);
 	readTriangleObj("Sphere.obj", Vertex[3], Texture[3], Nomal[3]);
+	readTriangleObj("gun.obj", Vertex[4], Texture[4], Nomal[4]);
+	readTriangleObj("sword.obj", Vertex[5], Texture[5], Nomal[5]);
 	//readTriangleObj("Sphere2.obj", Vertex[1], Texture[1], Nomal[1]);
 	//for (int i = 5; i < 9; i++)
 	//{
@@ -724,6 +727,142 @@ void drawscene()
 	glDrawArrays(GL_TRIANGLES, 0, Vertex[3].size());
 
 #pragma endregion 플레이어
+
+#pragma region 총
+	glBindVertexArray(VAO[4]);	// 총
+	unsigned int StageBlendCheck = glGetUniformLocation(shaderID, "Blendcheck");
+	glUniform1i(StageBlendCheck, 2);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, texture[4]);
+	glUniform1i(glGetUniformLocation(shaderID, "textureC"), 0);
+	glm::mat4 StageTrasMatrix = glm::mat4(1.0f);
+	if (_weapon == WEAPON::GUN)
+	{
+		if (_dir == PLAYERDIR::UP)
+		{
+			StageTrasMatrix = glm::translate(StageTrasMatrix, glm::vec3(TransList.T_Bodyx + 1.f, TransList.T_Bodyy + 2.0f, TransList.T_Bodyz));
+			StageTrasMatrix = glm::rotate(StageTrasMatrix, glm::radians(AngleList.GunAngle), glm::vec3(0.0f, 1.0f, 0.0f));
+		}
+		if (_dir == PLAYERDIR::DOWN)
+		{
+			StageTrasMatrix = glm::translate(StageTrasMatrix, glm::vec3(TransList.T_Bodyx + 0.5f, TransList.T_Bodyy + 2.0f, TransList.T_Bodyz));
+			StageTrasMatrix = glm::rotate(StageTrasMatrix, glm::radians(AngleList.GunAngle), glm::vec3(0.0f, 1.0f, 0.0f));
+		}
+
+		if (_dir == PLAYERDIR::LEFT)
+		{
+			StageTrasMatrix = glm::translate(StageTrasMatrix, glm::vec3(TransList.T_Bodyx, TransList.T_Bodyy + 2.0f, TransList.T_Bodyz + 0.5f));
+			StageTrasMatrix = glm::rotate(StageTrasMatrix, glm::radians(AngleList.GunAngle), glm::vec3(0.0f, 1.0f, 0.0f));
+		}
+		if (_dir == PLAYERDIR::RIGHT)
+		{
+			StageTrasMatrix = glm::translate(StageTrasMatrix, glm::vec3(TransList.T_Bodyx, TransList.T_Bodyy + 2.0f, TransList.T_Bodyz - 0.5f));
+			StageTrasMatrix = glm::rotate(StageTrasMatrix, glm::radians(AngleList.GunAngle), glm::vec3(0.0f, 1.0f, 0.0f));
+		}
+	}
+	else
+	{
+		if (_dir == PLAYERDIR::UP)
+		{
+			StageTrasMatrix = glm::translate(StageTrasMatrix, glm::vec3(TransList.T_Bodyx - 0.5f, TransList.T_Bodyy + 2.5f, TransList.T_Bodyz - 1.f));
+			StageTrasMatrix = glm::rotate(StageTrasMatrix, glm::radians(90.f), glm::vec3(0.0f, 1.0f, 0.0f));
+			StageTrasMatrix = glm::rotate(StageTrasMatrix, glm::radians(45.f), glm::vec3(1.0f, 0.0f, 0.0f));
+		}
+		if (_dir == PLAYERDIR::DOWN)
+		{
+			StageTrasMatrix = glm::translate(StageTrasMatrix, glm::vec3(TransList.T_Bodyx - 0.5f, TransList.T_Bodyy + 2.5f, TransList.T_Bodyz + 0.2f));
+			StageTrasMatrix = glm::rotate(StageTrasMatrix, glm::radians(90.f), glm::vec3(0.0f, 1.0f, 0.0f));
+			StageTrasMatrix = glm::rotate(StageTrasMatrix, glm::radians(45.f), glm::vec3(1.0f, 0.0f, 0.0f));
+		}
+		if (_dir == PLAYERDIR::LEFT)
+		{
+			StageTrasMatrix = glm::translate(StageTrasMatrix, glm::vec3(TransList.T_Bodyx - 0.3f, TransList.T_Bodyy + 2.5f, TransList.T_Bodyz - 0.5f));
+			StageTrasMatrix = glm::rotate(StageTrasMatrix, glm::radians(45.f), glm::vec3(1.0f, 0.0f, 0.0f));
+		}
+		if (_dir == PLAYERDIR::RIGHT)
+		{
+			StageTrasMatrix = glm::translate(StageTrasMatrix, glm::vec3(TransList.T_Bodyx + 1.0f, TransList.T_Bodyy + 2.5f, TransList.T_Bodyz - 0.5f));
+			StageTrasMatrix = glm::rotate(StageTrasMatrix, glm::radians(45.f), glm::vec3(1.0f, 0.0f, 0.0f));
+		}
+	}
+	StageTrasMatrix = glm::scale(StageTrasMatrix, glm::vec3(0.1f, 0.1f, 0.1f));
+	unsigned int StageTransMatrixLocation = glGetUniformLocation(shaderID, "modelTransform");
+	glUniformMatrix4fv(StageTransMatrixLocation, 1, GL_FALSE, glm::value_ptr(StageTrasMatrix));
+	glm::mat4 StageNormalMatrix = glm::mat4(1.0f);
+	unsigned int StageNormalMatrixLocation = glGetUniformLocation(shaderID, "normalTransform");
+	glUniformMatrix4fv(StageNormalMatrixLocation, 1, GL_FALSE, glm::value_ptr(StageNormalMatrix));
+	glDrawArrays(GL_TRIANGLES, 0, Vertex[4].size());
+#pragma endregion 총
+
+#pragma region 칼
+	glBindVertexArray(VAO[5]);	// 총
+	unsigned int SwordBlendCheck = glGetUniformLocation(shaderID, "Blendcheck");
+	glUniform1i(SwordBlendCheck, 2);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, texture[5]);
+	glUniform1i(glGetUniformLocation(shaderID, "textureC"), 0);
+	glm::mat4 SwordTrasMatrix = glm::mat4(1.0f);
+	if (_weapon == WEAPON::SWORD)
+	{
+		if (_dir == PLAYERDIR::UP)
+		{
+			SwordTrasMatrix = glm::translate(SwordTrasMatrix, glm::vec3(TransList.T_Bodyx + 0.5f, TransList.T_Bodyy + 2.0f, TransList.T_Bodyz));
+			SwordTrasMatrix = glm::rotate(SwordTrasMatrix, glm::radians(AngleList.SwordAngle), glm::vec3(0.0f, 1.0f, 0.0f));
+			SwordTrasMatrix = glm::rotate(SwordTrasMatrix, glm::radians(45.f), glm::vec3(1.0f, 0.0f, 0.0f));
+		}
+		if (_dir == PLAYERDIR::DOWN)
+		{
+			SwordTrasMatrix = glm::translate(SwordTrasMatrix, glm::vec3(TransList.T_Bodyx + 0.5f, TransList.T_Bodyy + 2.0f, TransList.T_Bodyz));
+			SwordTrasMatrix = glm::rotate(SwordTrasMatrix, glm::radians(AngleList.SwordAngle), glm::vec3(0.0f, 1.0f, 0.0f));
+			SwordTrasMatrix = glm::rotate(SwordTrasMatrix, glm::radians(45.f), glm::vec3(1.0f, 0.0f, 0.0f));
+		}
+
+		if (_dir == PLAYERDIR::LEFT)
+		{
+			SwordTrasMatrix = glm::translate(SwordTrasMatrix, glm::vec3(TransList.T_Bodyx, TransList.T_Bodyy + 2.0f, TransList.T_Bodyz + 0.5f));
+			SwordTrasMatrix = glm::rotate(SwordTrasMatrix, glm::radians(AngleList.SwordAngle), glm::vec3(0.0f, 1.0f, 0.0f));
+			SwordTrasMatrix = glm::rotate(SwordTrasMatrix, glm::radians(45.f), glm::vec3(1.0f, 0.0f, 0.0f));
+		}
+		if (_dir == PLAYERDIR::RIGHT)
+		{
+			SwordTrasMatrix = glm::translate(SwordTrasMatrix, glm::vec3(TransList.T_Bodyx, TransList.T_Bodyy + 2.0f, TransList.T_Bodyz - 0.5f));
+			SwordTrasMatrix = glm::rotate(SwordTrasMatrix, glm::radians(AngleList.SwordAngle), glm::vec3(0.0f, 1.0f, 0.0f));
+			SwordTrasMatrix = glm::rotate(SwordTrasMatrix, glm::radians(45.f), glm::vec3(1.0f, 0.0f, 0.0f));
+		}
+	}
+	else
+	{
+		if (_dir == PLAYERDIR::UP)
+		{
+			SwordTrasMatrix = glm::translate(SwordTrasMatrix, glm::vec3(TransList.T_Bodyx - 0.5f, TransList.T_Bodyy + 2.5f, TransList.T_Bodyz - 0.5f));
+			SwordTrasMatrix = glm::rotate(SwordTrasMatrix, glm::radians(90.f), glm::vec3(0.0f, 1.0f, 0.0f));
+			SwordTrasMatrix = glm::rotate(SwordTrasMatrix, glm::radians(135.f), glm::vec3(1.0f, 0.0f, 0.0f));
+		}
+		if (_dir == PLAYERDIR::DOWN)
+		{
+			SwordTrasMatrix = glm::translate(SwordTrasMatrix, glm::vec3(TransList.T_Bodyx - 0.5f, TransList.T_Bodyy + 2.5f, TransList.T_Bodyz + 0.5f));
+			SwordTrasMatrix = glm::rotate(SwordTrasMatrix, glm::radians(90.f), glm::vec3(0.0f, 1.0f, 0.0f));
+			SwordTrasMatrix = glm::rotate(SwordTrasMatrix, glm::radians(135.f), glm::vec3(1.0f, 0.0f, 0.0f));
+		}
+		if (_dir == PLAYERDIR::LEFT)
+		{
+			SwordTrasMatrix = glm::translate(SwordTrasMatrix, glm::vec3(TransList.T_Bodyx - 0.6f, TransList.T_Bodyy + 2.5f, TransList.T_Bodyz - 0.5f));
+			SwordTrasMatrix = glm::rotate(SwordTrasMatrix, glm::radians(135.f), glm::vec3(1.0f, 0.0f, 0.0f));
+		}
+		if (_dir == PLAYERDIR::RIGHT)
+		{
+			SwordTrasMatrix = glm::translate(SwordTrasMatrix, glm::vec3(TransList.T_Bodyx + 1.0f, TransList.T_Bodyy + 2.5f, TransList.T_Bodyz - 0.5f));
+			SwordTrasMatrix = glm::rotate(SwordTrasMatrix, glm::radians(135.f), glm::vec3(1.0f, 0.0f, 0.0f));
+		}
+	}
+	SwordTrasMatrix = glm::scale(SwordTrasMatrix, glm::vec3(10.f, 10.f, 10.f));
+	unsigned int SwordTransMatrixLocation = glGetUniformLocation(shaderID, "modelTransform");
+	glUniformMatrix4fv(SwordTransMatrixLocation, 1, GL_FALSE, glm::value_ptr(SwordTrasMatrix));
+	glm::mat4 SwordNormalMatrix = glm::mat4(1.0f);
+	unsigned int SwordNormalMatrixLocation = glGetUniformLocation(shaderID, "normalTransform");
+	glUniformMatrix4fv(SwordNormalMatrixLocation, 1, GL_FALSE, glm::value_ptr(SwordNormalMatrix));
+	glDrawArrays(GL_TRIANGLES, 0, Vertex[5].size());
+#pragma endregion 칼
 }
 
 
@@ -774,6 +913,28 @@ void initTexture()
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, fireWidthImage, fireHeightImage, 0, GL_RGB, GL_UNSIGNED_BYTE, fireData);
 	glGenerateMipmap(GL_TEXTURE_2D);
 	stbi_image_free(fireData);
+
+	glBindTexture(GL_TEXTURE_2D, texture[4]);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	int tempWidthImage, tempHeightImage, tempnumberOfChannel;
+	unsigned char* tempData = stbi_load("Texture/dust.jpg", &tempWidthImage, &tempHeightImage, &tempnumberOfChannel, 0);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, tempWidthImage, tempHeightImage, 0, GL_RGB, GL_UNSIGNED_BYTE, tempData);
+	glGenerateMipmap(GL_TEXTURE_2D);
+	stbi_image_free(tempData);
+
+	glBindTexture(GL_TEXTURE_2D, texture[5]);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	int FHWidthImage, FHHeightImage, FHnumberOfChannel;
+	unsigned char* FHData = stbi_load("Texture/FireHely.jpg", &FHWidthImage, &FHHeightImage, &FHnumberOfChannel, 0);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, FHWidthImage, FHHeightImage, 0, GL_RGB, GL_UNSIGNED_BYTE, FHData);
+	glGenerateMipmap(GL_TEXTURE_2D);
+	stbi_image_free(FHData);
 
 	/*glBindTexture(GL_TEXTURE_2D, texture[7]);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
