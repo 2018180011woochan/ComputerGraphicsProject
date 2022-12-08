@@ -227,7 +227,7 @@ void timer(int value)
 
 	if (isAttack)
 		AngleList.SwordAttackAngle += 30.f;
-	if (AngleList.SwordAttackAngle > 360) {
+	if (AngleList.SwordAttackAngle > 150) {
 		isAttack = false;
 		AngleList.SwordAttackAngle = 0.f;
 	}
@@ -414,49 +414,6 @@ void ObjList()
 void drawscene()
 {
 	glUseProgram(shaderID);
-
-	/*for (int i = 0; i < 200; i++)
-	{
-		glBindVertexArray(VAO[3]);
-		unsigned int snowBlendCheck = glGetUniformLocation(shaderID, "Blendcheck");
-		glUniform1i(snowBlendCheck, 2);
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, texture[0]);
-		glm::mat4 Snow = glm::mat4(1.0f);
-		Snow = glm::translate(Snow, glm::vec3(SLocation[i].x, SLocation[i].y, SLocation[i].z));
-		Snow = glm::scale(Snow, glm::vec3(0.03f, 0.03f, 0.03f));
-		unsigned int SnowLocation = glGetUniformLocation(shaderID, "modelTransform");
-		glUniformMatrix4fv(SnowLocation, 1, GL_FALSE, glm::value_ptr(Snow));
-		glm::mat4 SnowNormalmodel = glm::mat4(1.0f);
-		SnowNormalmodel = glm::translate(SnowNormalmodel, glm::vec3(SLocation[i].x, SLocation[i].y, SLocation[i].z));
-		unsigned int SnowNormalmodelLocation = glGetUniformLocation(shaderID, "normalTransform");
-		glUniformMatrix4fv(SnowNormalmodelLocation, 1, GL_FALSE, glm::value_ptr(SnowNormalmodel));
-		unsigned int SnowColorLocation = glGetUniformLocation(shaderID, "objColor");
-		glUniform3f(SnowColorLocation, 1, 0.388235, 0.278431);
-		glDrawArrays(GL_TRIANGLES, 0, Vertex[3].size());
-	}
-
-
-	for (int i = 0; i < 80; i++)
-	{
-		glBindVertexArray(VAO[23]);
-		unsigned int StarBlendCheck = glGetUniformLocation(shaderID, "Blendcheck");
-		glUniform1i(StarBlendCheck, 2);
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, texture[0]);
-		glm::mat4 Star = glm::mat4(1.0f);
-		Star = glm::translate(Star, glm::vec3(StarLocation[i].x, StarLocation[i].y, StarLocation[i].z));
-		Star = glm::scale(Star, glm::vec3(2.0f, 2.0f, 2.0f));
-		unsigned int StarLocation = glGetUniformLocation(shaderID, "modelTransform");
-		glUniformMatrix4fv(StarLocation, 1, GL_FALSE, glm::value_ptr(Star));
-		glm::mat4 StarNormalmodel = glm::mat4(1.0f);
-		StarNormalmodel = glm::translate(StarNormalmodel, glm::vec3(SLocation[i].x, SLocation[i].y, SLocation[i].z));
-		unsigned int StarNormalmodelLocation = glGetUniformLocation(shaderID, "normalTransform");
-		glUniformMatrix4fv(StarNormalmodelLocation, 1, GL_FALSE, glm::value_ptr(StarNormalmodel));
-		unsigned int StarColorLocation = glGetUniformLocation(shaderID, "objColor");
-		glUniform3f(StarColorLocation, 1, 0.388235, 0.278431);
-		glDrawArrays(GL_TRIANGLES, 0, Vertex[23].size());
-	}*/
 
 	for (int i = 0; i < 20; ++i) {
 		for (int j = 0; j < 20; ++j) {
