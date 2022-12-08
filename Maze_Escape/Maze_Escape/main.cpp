@@ -29,6 +29,7 @@ unsigned int texture[10];
 void MainView();
 void Resize(int w, int h);
 void keyboard(unsigned char key, int x, int y);
+void MySpecialKey(int Key, int X, int Y);
 
 //func
 void timer(int value);
@@ -75,8 +76,7 @@ struct Angle
 	float anglex = 0.0f;
 	float angley = 0.0f;
 
-	float LeftArmAngle = 0.0f;
-	float RightArmAngle = 0.0f;
+	float SwordAttackAngle = 0.0f;
 	float GunAngle = 0.0f;
 	float SwordAngle = 0.0f;
 
@@ -178,7 +178,7 @@ enum PLAYERDIR {UP, DOWN, LEFT, RIGHT, END};
 enum WEAPON {SWORD, GUN};
 PLAYERDIR _dir = PLAYERDIR::UP;
 WEAPON _weapon = WEAPON::GUN;
-int Mainswingchk = 1;
+bool isAttack = false;
 
 glm::vec3 objC = glm::vec3(0, 0, 0);
 glm::vec3 cameraPos = glm::vec3(1.0f, 3.0f, 10.0f);
@@ -209,6 +209,7 @@ int main(int argc, char** argv)
 	glutDisplayFunc(MainView);
 	glutReshapeFunc(Resize);
 	glutKeyboardFunc(keyboard);
+	glutSpecialFunc(MySpecialKey);
 	glutTimerFunc(1, timer, 1);
 	glutMainLoop();
 }
@@ -223,6 +224,14 @@ void timer(int value)
 		AngleList.angley = 90.f;
 	if (_dir == PLAYERDIR::LEFT)
 		AngleList.angley = -90.f;
+
+	if (isAttack)
+		AngleList.SwordAttackAngle += 30.f;
+	if (AngleList.SwordAttackAngle > 360) {
+		isAttack = false;
+		AngleList.SwordAttackAngle = 0.f;
+	}
+
 	glutPostRedisplay();
 	glutTimerFunc(17, timer, value);
 }
@@ -315,39 +324,49 @@ void Resize(int w, int h)
 	HEIGHT = h;
 }
 
-void keyboard(unsigned char key, int x, int y)
+void MySpecialKey(int Key, int X, int Y)
 {
-	switch (key)
-	{
-	case'w':
-		_dir = PLAYERDIR::UP;
-		TransList.T_Bodyz += Movevalue;
-		AngleList.GunAngle = 0.0f;
-		AngleList.SwordAngle = 0.0f;
-		break;
-	case's':
-		_dir = PLAYERDIR::DOWN;
-		TransList.T_Bodyz -= Movevalue;
-		AngleList.GunAngle = 180.f;
-		AngleList.SwordAngle = 180.f;
-		break;
-	case'a':
+	switch (Key) {
+	case GLUT_KEY_LEFT:     //왼쪽 키
 		_dir = PLAYERDIR::LEFT;
 		TransList.T_Bodyx += Movevalue;
 		AngleList.GunAngle = 90.f;
 		AngleList.SwordAngle = 90.f;
 		break;
-	case'd':
+	case GLUT_KEY_RIGHT:     //오른쪽 키
 		_dir = PLAYERDIR::RIGHT;
 		TransList.T_Bodyx -= Movevalue;
 		AngleList.GunAngle = 270.f;
 		AngleList.SwordAngle = 270.f;
 		break;
+	case GLUT_KEY_UP:      //위 키
+		_dir = PLAYERDIR::UP;
+		TransList.T_Bodyz += Movevalue;
+		AngleList.GunAngle = 0.0f;
+		AngleList.SwordAngle = 0.0f;
+		break;
+	case GLUT_KEY_DOWN:      //아래 키
+		_dir = PLAYERDIR::DOWN;
+		TransList.T_Bodyz -= Movevalue;
+		AngleList.GunAngle = 180.f;
+		AngleList.SwordAngle = 180.f;
+		break;
+	}
+	glutPostRedisplay();
+}
+
+void keyboard(unsigned char key, int x, int y)
+{
+	switch (key)
+	{
 	case '1':
 		_weapon = WEAPON::GUN;
 		break;
 	case '2':
 		_weapon = WEAPON::SWORD;
+		break;
+	case 'a':
+		isAttack = true;
 		break;
 	case'q':
 		glutLeaveMainLoop();
@@ -383,41 +402,13 @@ void InitBuffer()
 
 void ObjList()
 {
-	//readTriangleObj("plane3.obj", Vertex[0], Texture[0], Nomal[0]);
-	//readTriangleObj("plane3.obj", Vertex[9], Texture[9], Nomal[9]);
-
-
-	//readTriangleObj("cube3_.obj", Vertex[2], Texture[2], Nomal[2]);
-	//readTriangleObj("Sphere2.obj", Vertex[3], Texture[3], Nomal[3]);
 	readTriangleObj("plane3.obj", Vertex[0], Texture[0], Nomal[0]);
 	readTriangleObj("cube.obj", Vertex[1], Texture[1], Nomal[1]);
 	readTriangleObj("cube.obj", Vertex[2], Texture[2], Nomal[2]);
 	readTriangleObj("Sphere.obj", Vertex[3], Texture[3], Nomal[3]);
 	readTriangleObj("gun.obj", Vertex[4], Texture[4], Nomal[4]);
 	readTriangleObj("sword.obj", Vertex[5], Texture[5], Nomal[5]);
-	//readTriangleObj("Sphere2.obj", Vertex[1], Texture[1], Nomal[1]);
-	//for (int i = 5; i < 9; i++)
-	//{
-	//	readTriangleObj("Sphere2.obj", Vertex[i], Texture[i], Nomal[i]);
-	//}
-	//for (int i = 10; i < 13; i++)
-	//{
-	//	readTriangleObj("Sphere2.obj", Vertex[i], Texture[i], Nomal[i]);
-	//}
 
-	//readTriangleObj("hely.obj", Vertex[13], Texture[13], Nomal[13]);
-	//readTriangleObj("hely.obj", Vertex[14], Texture[14], Nomal[14]);
-	//readTriangleObj("cube3_.obj", Vertex[15], Texture[15], Nomal[15]);
-	//readTriangleObj("cube3_.obj", Vertex[16], Texture[16], Nomal[16]);
-	//readTriangleObj("hely.obj", Vertex[17], Texture[17], Nomal[17]);
-	//readTriangleObj("crown.obj", Vertex[18], Texture[18], Nomal[18]);
-	//readTriangleObj("sword.obj", Vertex[19], Texture[19], Nomal[19]);
-
-	//readTriangleObj("plane3.obj", Vertex[20], Texture[20], Nomal[20]);
-	//readTriangleObj("cube3_.obj", Vertex[21], Texture[21], Nomal[21]);
-	//readTriangleObj("cube3_.obj", Vertex[22], Texture[22], Nomal[22]);
-	//readTriangleObj("cube3_.obj", Vertex[23], Texture[23], Nomal[23]);
-	//readTriangleObj("fallingice.obj", Vertex[24], Texture[24], Nomal[24]);
 }
 
 void drawscene()
@@ -809,12 +800,14 @@ void drawscene()
 			SwordTrasMatrix = glm::translate(SwordTrasMatrix, glm::vec3(TransList.T_Bodyx + 0.5f, TransList.T_Bodyy + 2.0f, TransList.T_Bodyz));
 			SwordTrasMatrix = glm::rotate(SwordTrasMatrix, glm::radians(AngleList.SwordAngle), glm::vec3(0.0f, 1.0f, 0.0f));
 			SwordTrasMatrix = glm::rotate(SwordTrasMatrix, glm::radians(45.f), glm::vec3(1.0f, 0.0f, 0.0f));
+			SwordTrasMatrix = glm::rotate(SwordTrasMatrix, glm::radians(AngleList.SwordAttackAngle), glm::vec3(1.0f, 0.0f, 0.0f));
 		}
 		if (_dir == PLAYERDIR::DOWN)
 		{
 			SwordTrasMatrix = glm::translate(SwordTrasMatrix, glm::vec3(TransList.T_Bodyx + 0.5f, TransList.T_Bodyy + 2.0f, TransList.T_Bodyz));
 			SwordTrasMatrix = glm::rotate(SwordTrasMatrix, glm::radians(AngleList.SwordAngle), glm::vec3(0.0f, 1.0f, 0.0f));
 			SwordTrasMatrix = glm::rotate(SwordTrasMatrix, glm::radians(45.f), glm::vec3(1.0f, 0.0f, 0.0f));
+			SwordTrasMatrix = glm::rotate(SwordTrasMatrix, glm::radians(AngleList.SwordAttackAngle), glm::vec3(1.0f, 0.0f, 0.0f));
 		}
 
 		if (_dir == PLAYERDIR::LEFT)
@@ -822,12 +815,14 @@ void drawscene()
 			SwordTrasMatrix = glm::translate(SwordTrasMatrix, glm::vec3(TransList.T_Bodyx, TransList.T_Bodyy + 2.0f, TransList.T_Bodyz + 0.5f));
 			SwordTrasMatrix = glm::rotate(SwordTrasMatrix, glm::radians(AngleList.SwordAngle), glm::vec3(0.0f, 1.0f, 0.0f));
 			SwordTrasMatrix = glm::rotate(SwordTrasMatrix, glm::radians(45.f), glm::vec3(1.0f, 0.0f, 0.0f));
+			SwordTrasMatrix = glm::rotate(SwordTrasMatrix, glm::radians(AngleList.SwordAttackAngle), glm::vec3(1.0f, 0.0f, 0.0f));
 		}
 		if (_dir == PLAYERDIR::RIGHT)
 		{
 			SwordTrasMatrix = glm::translate(SwordTrasMatrix, glm::vec3(TransList.T_Bodyx, TransList.T_Bodyy + 2.0f, TransList.T_Bodyz - 0.5f));
 			SwordTrasMatrix = glm::rotate(SwordTrasMatrix, glm::radians(AngleList.SwordAngle), glm::vec3(0.0f, 1.0f, 0.0f));
 			SwordTrasMatrix = glm::rotate(SwordTrasMatrix, glm::radians(45.f), glm::vec3(1.0f, 0.0f, 0.0f));
+			SwordTrasMatrix = glm::rotate(SwordTrasMatrix, glm::radians(AngleList.SwordAttackAngle), glm::vec3(1.0f, 0.0f, 0.0f));
 		}
 	}
 	else
@@ -935,27 +930,5 @@ void initTexture()
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, FHWidthImage, FHHeightImage, 0, GL_RGB, GL_UNSIGNED_BYTE, FHData);
 	glGenerateMipmap(GL_TEXTURE_2D);
 	stbi_image_free(FHData);
-
-	/*glBindTexture(GL_TEXTURE_2D, texture[7]);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	int  PotalWidthImage, PotalHeightImage, PotalnumberOfChannel;
-	unsigned char* PotalData = stbi_load("Texture/Potalimage.jpg", &PotalWidthImage, &PotalHeightImage, &PotalnumberOfChannel, 0);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, PotalWidthImage, PotalHeightImage, 0, GL_RGB, GL_UNSIGNED_BYTE, PotalData);
-	glGenerateMipmap(GL_TEXTURE_2D);
-	stbi_image_free(PotalData);
-
-	glBindTexture(GL_TEXTURE_2D, texture[8]);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	int  PunchWidthImage, PunchHeightImage, PunchnumberOfChannel;
-	unsigned char* PunchData = stbi_load("Texture/Punchimage.jpg", &PunchWidthImage, &PunchHeightImage, &PunchnumberOfChannel, 0);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, PunchWidthImage, PunchHeightImage, 0, GL_RGB, GL_UNSIGNED_BYTE, PunchData);
-	glGenerateMipmap(GL_TEXTURE_2D);
-	stbi_image_free(PunchData);*/
 
 }
