@@ -66,6 +66,7 @@ struct Bullet {
     BULLETDIR _bulletDir = BULLETDIR::BULLET_UP;
     AABB _bulletAABB;
 };
+
 Bullet BulletLocation[20];
 int BulletIndex = 0;
 
@@ -227,8 +228,18 @@ void timer(int value)
         AngleList.angley = -90.f;
 
     if (_weapon == WEAPON::SWORD) {
-        if (isAttack)
+        if (isAttack) {
             AngleList.SwordAttackAngle += 30.f;
+
+            AABB SwordRange;
+            SwordRange.maxX = TransList.T_Bodyx + 2.f;
+            SwordRange.minX = TransList.T_Bodyx - 2.f;
+            SwordRange.maxZ = TransList.T_Bodyz + 2.f;
+            SwordRange.minZ = TransList.T_Bodyz - 2.f;
+
+            if (!CrashCheck(SwordRange, _dummy))
+                cout << "근접공격 성공" << endl;
+        }
         if (AngleList.SwordAttackAngle > 150) {
             isAttack = false;
             AngleList.SwordAttackAngle = 0.f;
@@ -411,20 +422,21 @@ void keyboard(unsigned char key, int x, int y)
             BulletLocation[BulletIndex].y = TransList.T_Bodyy + 2.0f;
             BulletLocation[BulletIndex].z = TransList.T_Bodyz;
 
-        }
-        switch (_dir) {
-        case PLAYERDIR::UP:
-            BulletLocation[BulletIndex]._bulletDir = BULLETDIR::BULLET_UP;
-            break;
-        case PLAYERDIR::DOWN:
-            BulletLocation[BulletIndex]._bulletDir = BULLETDIR::BULLET_DOWN;
-            break;
-        case PLAYERDIR::LEFT:
-            BulletLocation[BulletIndex]._bulletDir = BULLETDIR::BULLET_LEFT;
-            break;
-        case PLAYERDIR::RIGHT:
-            BulletLocation[BulletIndex]._bulletDir = BULLETDIR::BULLET_RIGHT;
-            break;
+
+            switch (_dir) {
+            case PLAYERDIR::UP:
+                BulletLocation[BulletIndex]._bulletDir = BULLETDIR::BULLET_UP;
+                break;
+            case PLAYERDIR::DOWN:
+                BulletLocation[BulletIndex]._bulletDir = BULLETDIR::BULLET_DOWN;
+                break;
+            case PLAYERDIR::LEFT:
+                BulletLocation[BulletIndex]._bulletDir = BULLETDIR::BULLET_LEFT;
+                break;
+            case PLAYERDIR::RIGHT:
+                BulletLocation[BulletIndex]._bulletDir = BULLETDIR::BULLET_RIGHT;
+                break;
+            }
         }
         break;
     case'q':
@@ -914,6 +926,7 @@ void drawscene()
     }
 #pragma endregion 총알
 
+#pragma region 더미타겟
     glBindVertexArray(VAO[1]);
     unsigned int BulletBlendCheck = glGetUniformLocation(shaderID, "Blendcheck");
     glUniform1i(BulletBlendCheck, 2);
@@ -932,7 +945,7 @@ void drawscene()
     unsigned int BulletNormalMatrixLocation = glGetUniformLocation(shaderID, "normalTransform");
     glUniformMatrix4fv(BulletNormalMatrixLocation, 1, GL_FALSE, glm::value_ptr(BulletNormalMatrix));
     glDrawArrays(GL_TRIANGLES, 0, Vertex[2].size());
-
+#pragma endregion 더미타겟
 }
 
 
