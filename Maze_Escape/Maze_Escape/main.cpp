@@ -52,6 +52,8 @@ struct AABB {
     float minX;
     float maxZ;
     float minZ;
+    float lengthX = abs(maxX - minX);
+    float lengthZ = abs(maxZ - minZ);
 };
 
 bool CrashCheck(AABB pAABB1, AABB pAABB2);
@@ -170,7 +172,6 @@ struct Transration
 
 }TransList;
 
-
 GLuint VAO[30];
 GLuint VBO[90];
 
@@ -260,8 +261,8 @@ void timer(int value)
         if (BulletLocation[i].x == 99.f)
             continue;
 
-        if (CrashCheck(BulletLocation[i]._bulletAABB, _dummy))
-            cout << "dd" << endl;
+        if (!CrashCheck(BulletLocation[i]._bulletAABB, _dummy))
+            cout << i << "번째 총알 충돌" << endl;
 
     }
 
@@ -475,20 +476,17 @@ void ObjList()
 
 }
 
-bool CrashCheck(AABB pAABB1, AABB pAABB2)
+bool CrashCheck(AABB a, AABB b)
 {
-    // x축에 대하여
-    if ((pAABB1.maxX < pAABB2.minX ||
-        pAABB1.minX < pAABB2.maxX) &&
-        (pAABB1.maxZ < pAABB2.minZ ||
-            pAABB1.minZ < pAABB2.maxZ))
+    a.lengthX = a.maxX - a.minX;
+    a.lengthZ = a.maxZ - a.minZ;
+
+    b.lengthX = b.maxX - b.minX;
+    b.lengthZ = b.maxZ - b.minZ;
+
+    if ((b.minX + b.lengthX > a.minX + a.lengthX) && (a.minX + a.lengthX > b.minX) &&
+        (b.minZ + b.lengthZ > a.minZ) && (a.minZ + a.lengthZ > b.minZ))
         return false;
-
-    //// z축에 대하여
-    //if (pAABB1.maxZ < pAABB2.minZ ||
-    //   pAABB1.minZ < pAABB2.maxZ)
-    //   return false;
-
     return true;
 }
 
