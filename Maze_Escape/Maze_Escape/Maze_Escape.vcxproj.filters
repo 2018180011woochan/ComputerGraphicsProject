@@ -26,6 +26,12 @@
     <Filter Include="FileToOut">
       <UniqueIdentifier>{32877674-3599-410c-90fb-8b16a63d9c9b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="소스 파일\00.GameObject\01.Monster">
+      <UniqueIdentifier>{4c9d2fa5-f47c-43ab-bd66-6ae52bc48b4a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\00.GameObject\01.Monster\00.FixMonster">
+      <UniqueIdentifier>{625368c6-6a61-4e3c-88f1-d50fc5a95d2c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="fragment.glsl">
@@ -60,6 +66,9 @@
     <ClCompile Include="filetobuf.cpp">
       <Filter>FileToOut</Filter>
     </ClCompile>
+    <ClCompile Include="FixMonster.cpp">
+      <Filter>소스 파일\00.GameObject\01.Monster\00.FixMonster</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="readobj.h">
@@ -85,6 +94,9 @@
     </ClInclude>
     <ClInclude Include="stb_image.h">
       <Filter>소스 파일\99.Header</Filter>
+    </ClInclude>
+    <ClInclude Include="FixMonster.h">
+      <Filter>소스 파일\00.GameObject\01.Monster\00.FixMonster</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

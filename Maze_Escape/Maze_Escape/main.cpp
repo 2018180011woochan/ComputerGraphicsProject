@@ -18,6 +18,8 @@
 #include "MakeShader.h"
 #include "readobj.h"
 
+#include "FixMonster.h"
+
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
@@ -47,17 +49,17 @@ PLAYERDIR _dir = PLAYERDIR::UP;
 WEAPON _weapon = WEAPON::GUN;
 
 // crash
-struct AABB {
-    float maxX;
-    float minX;
-    float maxZ;
-    float minZ;
-    float lengthX = abs(maxX - minX);
-    float lengthZ = abs(maxZ - minZ);
-};
+//struct AABB {
+//    float maxX;
+//    float minX;
+//    float maxZ;
+//    float minZ;
+//    float lengthX;
+//    float lengthZ;
+//};
 
 bool CrashCheck(AABB pAABB1, AABB pAABB2);
-AABB _dummy;
+
 //bullet
 struct Bullet {
     float x;
@@ -190,6 +192,8 @@ glm::vec3 Cameraposdir = glm::vec3(0.0f);
 glm::vec3 Cameradir = glm::vec3(0.0f);
 float Movevalue = 0.8f;
 
+CGameObject* _monsters[10];
+
 int main(int argc, char** argv)
 {
     //PlaySound(TEXT("backsound.wav"), NULL, SND_ASYNC | SND_ALIAS);
@@ -218,6 +222,8 @@ int main(int argc, char** argv)
 
 void timer(int value)
 {
+    //cout << "x : " << TransList.T_Bodyx << ", z : " << TransList.T_Bodyz << endl;
+
     if (_dir == PLAYERDIR::UP)
         AngleList.angley = 0.f;
     if (_dir == PLAYERDIR::DOWN)
@@ -237,8 +243,10 @@ void timer(int value)
             SwordRange.maxZ = TransList.T_Bodyz + 2.f;
             SwordRange.minZ = TransList.T_Bodyz - 2.f;
 
-            if (!CrashCheck(SwordRange, _dummy))
-                cout << "근접공격 성공" << endl;
+            for (int i = 0; i < 10; ++i) {
+                if (!CrashCheck(SwordRange, _monsters[i]->_AABB))
+                    cout << "근접공격 성공" << endl;
+            }
         }
         if (AngleList.SwordAttackAngle > 150) {
             isAttack = false;
@@ -272,9 +280,14 @@ void timer(int value)
         if (BulletLocation[i].x == 99.f)
             continue;
 
-        if (!CrashCheck(BulletLocation[i]._bulletAABB, _dummy))
-            cout << i << "번째 총알 충돌" << endl;
+        for (int j = 0; j < 10; ++j) {
+            if (!CrashCheck(BulletLocation[i]._bulletAABB, _monsters[j]->_AABB))
+                cout << i << "번째 총알 충돌" << endl;
+        }
+    }
 
+    for (int i = 0; i < 10; ++i) {
+        static_cast<FixMonster*>(_monsters[i])->Update(TransList.T_Bodyx, TransList.T_Bodyz);
     }
 
     glutPostRedisplay();
@@ -440,6 +453,10 @@ void keyboard(unsigned char key, int x, int y)
         }
         break;
     case'q':
+        for (int i = 0; i < 10; ++i) {
+            delete _monsters[i];
+            _monsters[i] = nullptr;
+        }
         glutLeaveMainLoop();
         break;
     }
@@ -450,7 +467,7 @@ void InitBuffer()
 {
     glGenVertexArrays(26, VAO);
 
-    for (int i = 0; i <= 5; i++)
+    for (int i = 0; i <= 6; i++)
     {
         glBindVertexArray(VAO[i]);
         glGenBuffers(3, &VBO[3 * i]);
@@ -475,26 +492,63 @@ void InitBuffer()
         BulletLocation[i].z = 99.f;
     }
 
+    for (int i = 0; i < 10; ++i) {
+        _monsters[i] = new FixMonster(i);
+        _monsters[i]->_yPos = 2.f;
+    }
+
+#pragma region 수동위치정해주기 ㄱ-
+    _monsters[0]->_xPos = 6.4f;
+    _monsters[0]->_zPos = 18.8f;
+
+    _monsters[1]->_xPos = -2.4f;
+    _monsters[1]->_zPos = 38.f;
+
+    _monsters[2]->_xPos = 1.6f;
+    _monsters[2]->_zPos = 64.4f;
+
+    _monsters[3]->_xPos = -7.2f;
+    _monsters[3]->_zPos = 15.6f;
+
+    _monsters[4]->_xPos = 40.8f;
+    _monsters[4]->_zPos = 44.4f;
+
+    _monsters[5]->_xPos = 41.6f;
+    _monsters[5]->_zPos = 17.2f;
+
+    _monsters[6]->_xPos = 68.f;
+    _monsters[6]->_zPos = 17.2f;
+
+    _monsters[7]->_xPos = 116.f;
+    _monsters[7]->_zPos = 60.4f;
+
+    _monsters[8]->_xPos = 116.f;
+    _monsters[8]->_zPos = 112.4f;
+
+    _monsters[9]->_xPos = 97.f;
+    _monsters[9]->_zPos = 120.f;
+#pragma endregion
 }
 
 void ObjList()
 {
-    readTriangleObj("plane3.obj", Vertex[0], Texture[0], Nomal[0]);
-    readTriangleObj("cube.obj", Vertex[1], Texture[1], Nomal[1]);
-    readTriangleObj("cube.obj", Vertex[2], Texture[2], Nomal[2]);
-    readTriangleObj("Sphere.obj", Vertex[3], Texture[3], Nomal[3]);
-    readTriangleObj("gun.obj", Vertex[4], Texture[4], Nomal[4]);
-    readTriangleObj("sword.obj", Vertex[5], Texture[5], Nomal[5]);
+    readTriangleObj("OBJ/plane3.obj", Vertex[0], Texture[0], Nomal[0]);
+    readTriangleObj("OBJ/cube.obj", Vertex[1], Texture[1], Nomal[1]);
+    readTriangleObj("OBJ/cube.obj", Vertex[2], Texture[2], Nomal[2]);
+    readTriangleObj("OBJ/Sphere.obj", Vertex[3], Texture[3], Nomal[3]);
+    readTriangleObj("OBJ/gun.obj", Vertex[4], Texture[4], Nomal[4]);
+    readTriangleObj("OBJ/sword.obj", Vertex[5], Texture[5], Nomal[5]);
+    readTriangleObj("OBJ/crown.obj", Vertex[6], Texture[6], Nomal[6]);
 
 }
 
 bool CrashCheck(AABB a, AABB b)
 {
-    a.lengthX = a.maxX - a.minX;
-    a.lengthZ = a.maxZ - a.minZ;
+    a.lengthX = abs(a.maxX - a.minX);
+    a.lengthZ = abs(a.maxZ - a.minZ);
 
-    b.lengthX = b.maxX - b.minX;
-    b.lengthZ = b.maxZ - b.minZ;
+    b.lengthX = abs(b.maxX - b.minX);
+    b.lengthZ = abs(b.maxZ - b.minZ);
 
     if ((b.minX + b.lengthX > a.minX + a.lengthX) && (a.minX + a.lengthX > b.minX) &&
         (b.minZ + b.lengthZ > a.minZ) && (a.minZ + a.lengthZ > b.minZ))
@@ -927,24 +981,28 @@ void drawscene()
 #pragma endregion 총알
 
 #pragma region 더미타겟
-    glBindVertexArray(VAO[1]);
-    unsigned int BulletBlendCheck = glGetUniformLocation(shaderID, "Blendcheck");
-    glUniform1i(BulletBlendCheck, 2);
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, texture[2]);
-    glm::mat4 BulletTrasMatrix = glm::mat4(1.0f);
-    BulletTrasMatrix = glm::translate(BulletTrasMatrix, glm::vec3(0.f, 2.f, 20.f));
-    _dummy.maxX = 0.f + 2.f;
-    _dummy.minX = 0.f - 2.f;
-    _dummy.maxZ = 20.f + 2.f;
-    _dummy.minZ = 20.f - 2.f;
-    BulletTrasMatrix = glm::scale(BulletTrasMatrix, glm::vec3(2, 2, 2));
-    unsigned int BulletTransMatrixLocation = glGetUniformLocation(shaderID, "modelTransform");
-    glUniformMatrix4fv(BulletTransMatrixLocation, 1, GL_FALSE, glm::value_ptr(BulletTrasMatrix));
-    glm::mat4 BulletNormalMatrix = glm::mat4(1.0f);
-    unsigned int BulletNormalMatrixLocation = glGetUniformLocation(shaderID, "normalTransform");
-    glUniformMatrix4fv(BulletNormalMatrixLocation, 1, GL_FALSE, glm::value_ptr(BulletNormalMatrix));
-    glDrawArrays(GL_TRIANGLES, 0, Vertex[2].size());
+    for (int i = 0; i < 10; ++i) {
+        glBindVertexArray(VAO[1]);
+        unsigned int BulletBlendCheck = glGetUniformLocation(shaderID, "Blendcheck");
+        glUniform1i(BulletBlendCheck, 2);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, texture[6]);
+        glm::mat4 BulletTrasMatrix = glm::mat4(1.0f);
+        //BulletTrasMatrix = glm::translate(BulletTrasMatrix, glm::vec3(0.f, 2.f, 20.f));
+        BulletTrasMatrix = glm::translate(BulletTrasMatrix, glm::vec3(_monsters[i]->_xPos, _monsters[i]->_yPos, _monsters[i]->_zPos));
+        _monsters[i]->_AABB.maxX = _monsters[i]->_xPos + 2.f;
+        _monsters[i]->_AABB.minX = _monsters[i]->_xPos - 2.f;
+        _monsters[i]->_AABB.maxZ = _monsters[i]->_zPos + 2.f;
+        _monsters[i]->_AABB.minZ = _monsters[i]->_zPos - 2.f;
+
+        BulletTrasMatrix = glm::scale(BulletTrasMatrix, glm::vec3(2, 2, 2));
+        unsigned int BulletTransMatrixLocation = glGetUniformLocation(shaderID, "modelTransform");
+        glUniformMatrix4fv(BulletTransMatrixLocation, 1, GL_FALSE, glm::value_ptr(BulletTrasMatrix));
+        glm::mat4 BulletNormalMatrix = glm::mat4(1.0f);
+        unsigned int BulletNormalMatrixLocation = glGetUniformLocation(shaderID, "normalTransform");
+        glUniformMatrix4fv(BulletNormalMatrixLocation, 1, GL_FALSE, glm::value_ptr(BulletNormalMatrix));
+        glDrawArrays(GL_TRIANGLES, 0, Vertex[1].size());
+    }
 #pragma endregion 더미타겟
 }
 
@@ -1018,5 +1076,16 @@ void initTexture()
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, FHWidthImage, FHHeightImage, 0, GL_RGB, GL_UNSIGNED_BYTE, FHData);
     glGenerateMipmap(GL_TEXTURE_2D);
     stbi_image_free(FHData);
+
+    glBindTexture(GL_TEXTURE_2D, texture[6]);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    int MonsterWidthImage, MonsterHeightImage, MonsternumberOfChannel;
+    unsigned char* MonsterData = stbi_load("Texture/FireHely.jpg", &MonsterWidthImage, &MonsterHeightImage, &MonsternumberOfChannel, 0);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, MonsterWidthImage, MonsterHeightImage, 0, GL_RGB, GL_UNSIGNED_BYTE, MonsterData);
+    glGenerateMipmap(GL_TEXTURE_2D);
+    stbi_image_free(MonsterData);
 
 }

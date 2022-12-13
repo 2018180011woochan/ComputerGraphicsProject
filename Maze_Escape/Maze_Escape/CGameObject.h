@@ -3,6 +3,15 @@
 #ifndef __CGAMEOBJECT_H__
 #define __CGAMEOBJECT_H__
 
+struct AABB {
+	float maxX;
+	float minX;
+	float maxZ;
+	float minZ;
+	float lengthX;
+	float lengthZ;
+};
+
 class CGameObject
 {
 public:
@@ -24,6 +33,7 @@ public:
 	float _xPos = 0.f;
 	float _yPos = 0.f;
 	float _zPos = 0.f;
+	AABB _AABB;
 };
 
 #endif // !__CGAMEOBJECT_H__
