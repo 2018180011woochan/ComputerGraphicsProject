@@ -237,8 +237,9 @@ void timer(int value)
             SwordRange.minZ = TransList.T_Bodyz - 2.f;
 
             for (int i = 0; i < 10; ++i) {
-                if (!CrashCheck(SwordRange, _monsters[i]->_AABB))
-                    _monsters[i]->HP -= 1.f;
+                if (!CrashCheck(SwordRange, _monsters[i]->_AABB)) 
+                    _monsters[i]->HP -= 2.f;
+                
             }
         }
         if (AngleList.SwordAttackAngle > 150) {
@@ -274,8 +275,8 @@ void timer(int value)
             continue;
 
         for (int j = 0; j < 10; ++j) {
-            if (!CrashCheck(BulletLocation[i]._bulletAABB, _monsters[j]->_AABB))
-                _monsters[j]->HP -= 2.f;
+            if (!CrashCheck(BulletLocation[i]._bulletAABB, _monsters[j]->_AABB)) 
+                _monsters[j]->HP -= 2.f;           
         }
     }
 
@@ -997,7 +998,7 @@ void drawscene()
             SwordTrasMatrix = glm::rotate(SwordTrasMatrix, glm::radians(135.f), glm::vec3(1.0f, 0.0f, 0.0f));
         }
     }
-    SwordTrasMatrix = glm::scale(SwordTrasMatrix, glm::vec3(10.f, 10.f, 10.f));
+    SwordTrasMatrix = glm::scale(SwordTrasMatrix, glm::vec3(15.f, 15.f, 15.f));
     unsigned int SwordTransMatrixLocation = glGetUniformLocation(shaderID, "modelTransform");
     glUniformMatrix4fv(SwordTransMatrixLocation, 1, GL_FALSE, glm::value_ptr(SwordTrasMatrix));
     glm::mat4 SwordNormalMatrix = glm::mat4(1.0f);

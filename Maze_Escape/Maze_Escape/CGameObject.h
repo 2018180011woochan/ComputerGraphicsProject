@@ -37,6 +37,10 @@ public:
 	float objSpeed = 0.f;
 	float HP;
 
+	bool isDamaged = false;
+	bool JumpCheck = false;
+
+
 };
 
 #endif // !__CGAMEOBJECT_H__
