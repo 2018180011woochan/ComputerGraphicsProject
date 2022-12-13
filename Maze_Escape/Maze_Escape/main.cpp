@@ -19,9 +19,17 @@
 #include "readobj.h"
 
 #include "FixMonster.h"
+#include "JumpingMonster.h"
+#include "Effect.h"
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
+
+random_device rd;
+default_random_engine dr(rd());
+uniform_real_distribution<> uid(-0.5, 0.5);
+
+
 
 void InitBuffer();
 void initTexture();
@@ -186,6 +194,8 @@ glm::vec3 Cameradir = glm::vec3(0.0f);
 float Movevalue = 0.8f;
 
 CGameObject* _monsters[10];
+CGameObject* _JumpingMonsters[10];
+CGameObject* _effect[20];
 
 int main(int argc, char** argv)
 {
@@ -239,6 +249,9 @@ void timer(int value)
             for (int i = 0; i < 10; ++i) {
                 if (!CrashCheck(SwordRange, _monsters[i]->_AABB)) 
                     _monsters[i]->HP -= 2.f;
+
+                if (!CrashCheck(SwordRange, _JumpingMonsters[i]->_AABB))
+                    _JumpingMonsters[i]->HP -= 2.f;
                 
             }
         }
@@ -275,17 +288,39 @@ void timer(int value)
             continue;
 
         for (int j = 0; j < 10; ++j) {
-            if (!CrashCheck(BulletLocation[i]._bulletAABB, _monsters[j]->_AABB)) 
-                _monsters[j]->HP -= 2.f;           
+            if (!CrashCheck(BulletLocation[i]._bulletAABB, _monsters[j]->_AABB)) {
+                _monsters[j]->HP -= 2.f;
+                for (int k = 0; k < 20; ++k) {
+                    //if (!_effect[j]->isDead) {
+                        _effect[k]->_xPos = _monsters[j]->_xPos;
+                        _effect[k]->_yPos = _monsters[j]->_yPos;
+                        _effect[k]->_zPos = _monsters[j]->_zPos;
+                   // }
+                }
+            }
+
+            if (!CrashCheck(BulletLocation[i]._bulletAABB, _JumpingMonsters[j]->_AABB))
+                _JumpingMonsters[j]->HP -= 2.f;
+
+            
         }
     }
 
     for (int i = 0; i < 10; ++i) {
         static_cast<FixMonster*>(_monsters[i])->Update(TransList.T_Bodyx, TransList.T_Bodyz);
+        static_cast<JumpingMonster*>(_JumpingMonsters[i])->Update(TransList.T_Bodyx, TransList.T_Bodyz);
+    }
+    for (int i = 0; i < 20; ++i) {
+        static_cast<Effect*>(_effect[i])->Update(TransList.T_Bodyx, TransList.T_Bodyy, TransList.T_Bodyz);
     }
 
     for (int i = 0; i < 10; ++i) {
         if (!CrashCheck(_PlayerAABB, _monsters[i]->_AABB)) {
+            if (!isDamaged)
+                isDamaged = true;
+        }
+
+        if (!CrashCheck(_PlayerAABB, _JumpingMonsters[i]->_AABB)) {
             if (!isDamaged)
                 isDamaged = true;
         }
@@ -529,12 +564,29 @@ void InitBuffer()
         BulletLocation[i].y = 99.f;
         BulletLocation[i].z = 99.f;
     }
-
+    
     for (int i = 0; i < 10; ++i) {
         _monsters[i] = new FixMonster(i);
         _monsters[i]->_yPos = 2.f;
         _monsters[i]->objSpeed = 0.05f;
         _monsters[i]->HP = 50.f;
+    }
+    for (int i = 0; i < 10; ++i) {
+        _JumpingMonsters[i] = new JumpingMonster(i);
+        _JumpingMonsters[i]->_yPos = 2.f;
+        _JumpingMonsters[i]->objSpeed = 0.08f;
+        _JumpingMonsters[i]->HP = 50.f;
+    }
+
+    for (int i = 0; i < 20; ++i) {
+        _effect[i] = new Effect();
+        _effect[i]->_xPos = 99.f;
+        _effect[i]->_yPos = 99.f;
+        _effect[i]->_zPos = 99.f;
+
+        _effect[i]->R_x = uid(dr);
+        _effect[i]->R_y = uid(dr);
+        _effect[i]->R_z = uid(dr);
     }
 
 #pragma region 수동위치정해주기 ㄱ-
@@ -567,6 +619,38 @@ void InitBuffer()
 
     _monsters[9]->_xPos = 97.f;
     _monsters[9]->_zPos = 120.f;
+#pragma endregion
+
+#pragma region 수동위치정해주기 ㄱ-
+    _JumpingMonsters[0]->_xPos = 36.f;
+    _JumpingMonsters[0]->_zPos = 89.f;
+
+    _JumpingMonsters[1]->_xPos = 36.f;
+    _JumpingMonsters[1]->_zPos = 67.;
+
+    _JumpingMonsters[2]->_xPos = 19.f;
+    _JumpingMonsters[2]->_zPos = 67.f;
+
+    _JumpingMonsters[3]->_xPos = 55.f;
+    _JumpingMonsters[3]->_zPos = 28.f;
+
+    _JumpingMonsters[4]->_xPos = 109.f;
+    _JumpingMonsters[4]->_zPos = 28.f;
+
+    _JumpingMonsters[5]->_xPos = 110.f;
+    _JumpingMonsters[5]->_zPos = 45.f;
+
+    _JumpingMonsters[6]->_xPos = 127.f;
+    _JumpingMonsters[6]->_zPos = 45.f;
+
+    _JumpingMonsters[7]->_xPos = 127.f;
+    _JumpingMonsters[7]->_zPos = 134.f;
+
+    _JumpingMonsters[8]->_xPos = 27.f;
+    _JumpingMonsters[8]->_zPos = 134.f;
+
+    _JumpingMonsters[9]->_xPos = 27.f;
+    _JumpingMonsters[9]->_zPos = 157.f;
 #pragma endregion
 }
 
@@ -1050,6 +1134,51 @@ void drawscene()
         glDrawArrays(GL_TRIANGLES, 0, Vertex[1].size());
     }
 #pragma endregion fixMonster
+
+#pragma region JumpingMonster
+    for (int i = 0; i < 10; ++i) {
+        glBindVertexArray(VAO[1]);
+        unsigned int BulletBlendCheck = glGetUniformLocation(shaderID, "Blendcheck");
+        glUniform1i(BulletBlendCheck, 2);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, texture[3]);
+        glm::mat4 BulletTrasMatrix = glm::mat4(1.0f);
+        //BulletTrasMatrix = glm::translate(BulletTrasMatrix, glm::vec3(0.f, 2.f, 20.f));
+        BulletTrasMatrix = glm::translate(BulletTrasMatrix, glm::vec3(_JumpingMonsters[i]->_xPos, _JumpingMonsters[i]->_yPos, _JumpingMonsters[i]->_zPos));
+        _JumpingMonsters[i]->_AABB.maxX = _JumpingMonsters[i]->_xPos + 2.f;
+        _JumpingMonsters[i]->_AABB.minX = _JumpingMonsters[i]->_xPos - 2.f;
+        _JumpingMonsters[i]->_AABB.maxZ = _JumpingMonsters[i]->_zPos + 2.f;
+        _JumpingMonsters[i]->_AABB.minZ = _JumpingMonsters[i]->_zPos - 2.f;
+
+        BulletTrasMatrix = glm::scale(BulletTrasMatrix, glm::vec3(2, 2, 2));
+        unsigned int BulletTransMatrixLocation = glGetUniformLocation(shaderID, "modelTransform");
+        glUniformMatrix4fv(BulletTransMatrixLocation, 1, GL_FALSE, glm::value_ptr(BulletTrasMatrix));
+        glm::mat4 BulletNormalMatrix = glm::mat4(1.0f);
+        unsigned int BulletNormalMatrixLocation = glGetUniformLocation(shaderID, "normalTransform");
+        glUniformMatrix4fv(BulletNormalMatrixLocation, 1, GL_FALSE, glm::value_ptr(BulletNormalMatrix));
+        glDrawArrays(GL_TRIANGLES, 0, Vertex[1].size());
+    }
+#pragma endregion JumpingMonster
+
+#pragma region Effect
+    for (int i = 0; i < 20; ++i) {
+        glBindVertexArray(VAO[1]);
+        unsigned int BulletBlendCheck = glGetUniformLocation(shaderID, "Blendcheck");
+        glUniform1i(BulletBlendCheck, 2);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, texture[3]);
+        glm::mat4 BulletTrasMatrix = glm::mat4(1.0f);
+        BulletTrasMatrix = glm::translate(BulletTrasMatrix, glm::vec3(_effect[i]->_xPos, _effect[i]->_yPos, _effect[i]->_zPos));
+
+        BulletTrasMatrix = glm::scale(BulletTrasMatrix, glm::vec3(0.5, 0.5, 0.5));
+        unsigned int BulletTransMatrixLocation = glGetUniformLocation(shaderID, "modelTransform");
+        glUniformMatrix4fv(BulletTransMatrixLocation, 1, GL_FALSE, glm::value_ptr(BulletTrasMatrix));
+        glm::mat4 BulletNormalMatrix = glm::mat4(1.0f);
+        unsigned int BulletNormalMatrixLocation = glGetUniformLocation(shaderID, "normalTransform");
+        glUniformMatrix4fv(BulletNormalMatrixLocation, 1, GL_FALSE, glm::value_ptr(BulletNormalMatrix));
+        glDrawArrays(GL_TRIANGLES, 0, Vertex[1].size());
+    }
+#pragma endregion Effect
 }
 
 

@@ -39,7 +39,11 @@ public:
 
 	bool isDamaged = false;
 	bool JumpCheck = false;
+	bool isDead = false;
 
+	float R_x;
+	float R_y;
+	float R_z;
 
 };
 

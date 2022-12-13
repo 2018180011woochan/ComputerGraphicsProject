@@ -35,18 +35,21 @@
     <Filter Include="소스 파일\00.GameObject\01.Monster\01.JumpingMonster">
       <UniqueIdentifier>{40477d6f-05c2-4ffa-ae4d-007df8b298f2}</UniqueIdentifier>
     </Filter>
+    <Filter Include="소스 파일\00.GameObject\02.Effect">
+      <UniqueIdentifier>{10209b65-3ee6-4ada-900a-3d57408acbb4}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <None Include="fragment.glsl">
-      <Filter>Shader</Filter>
-    </None>
-    <None Include="vertex.glsl">
-      <Filter>Shader</Filter>
-    </None>
     <None Include="Shader\fragmentBlendShader.glsl">
       <Filter>Shader</Filter>
     </None>
     <None Include="Shader\VertexTextureShader.glsl">
+      <Filter>Shader</Filter>
+    </None>
+    <None Include="Shader\fragment.glsl">
+      <Filter>Shader</Filter>
+    </None>
+    <None Include="Shader\vertex.glsl">
       <Filter>Shader</Filter>
     </None>
   </ItemGroup>
@@ -71,6 +74,12 @@
     </ClCompile>
     <ClCompile Include="FixMonster.cpp">
       <Filter>소스 파일\00.GameObject\01.Monster\00.FixMonster</Filter>
+    </ClCompile>
+    <ClCompile Include="JumpingMonster.cpp">
+      <Filter>소스 파일\00.GameObject\01.Monster\01.JumpingMonster</Filter>
+    </ClCompile>
+    <ClCompile Include="Effect.cpp">
+      <Filter>소스 파일\00.GameObject\02.Effect</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -100,6 +109,12 @@
     </ClInclude>
     <ClInclude Include="FixMonster.h">
       <Filter>소스 파일\00.GameObject\01.Monster\00.FixMonster</Filter>
+    </ClInclude>
+    <ClInclude Include="JumpingMonster.h">
+      <Filter>소스 파일\00.GameObject\01.Monster\01.JumpingMonster</Filter>
+    </ClInclude>
+    <ClInclude Include="Effect.h">
+      <Filter>소스 파일\00.GameObject\02.Effect</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
