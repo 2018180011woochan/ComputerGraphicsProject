@@ -34,7 +34,8 @@ public:
 	float _yPos = 0.f;
 	float _zPos = 0.f;
 	AABB _AABB;
-	float objSpeed = 0.05f;
+	float objSpeed = 0.f;
+	float HP;
 
 };
 

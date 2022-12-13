@@ -245,7 +245,7 @@ void timer(int value)
 
             for (int i = 0; i < 10; ++i) {
                 if (!CrashCheck(SwordRange, _monsters[i]->_AABB))
-                    cout << "근접공격 성공" << endl;
+                    _monsters[i]->HP -= 1.f;
             }
         }
         if (AngleList.SwordAttackAngle > 150) {
@@ -257,16 +257,16 @@ void timer(int value)
     for (int i = 0; i < 20; ++i) {
         switch (BulletLocation[i]._bulletDir) {
         case BULLETDIR::BULLET_UP:
-            BulletLocation[i].z += 0.1f;
+            BulletLocation[i].z += 0.5f;
             break;
         case BULLETDIR::BULLET_DOWN:
-            BulletLocation[i].z -= 0.1f;
+            BulletLocation[i].z -= 0.5f;
             break;
         case BULLETDIR::BULLET_LEFT:
-            BulletLocation[i].x += 0.1f;
+            BulletLocation[i].x += 0.5f;
             break;
         case BULLETDIR::BULLET_RIGHT:
-            BulletLocation[i].x -= 0.1f;
+            BulletLocation[i].x -= 0.5f;
             break;
         }
     }
@@ -282,7 +282,7 @@ void timer(int value)
 
         for (int j = 0; j < 10; ++j) {
             if (!CrashCheck(BulletLocation[i]._bulletAABB, _monsters[j]->_AABB))
-                cout << i << "번째 총알 충돌" << endl;
+                _monsters[j]->HP -= 2.f;
         }
     }
 
@@ -495,6 +495,8 @@ void InitBuffer()
     for (int i = 0; i < 10; ++i) {
         _monsters[i] = new FixMonster(i);
         _monsters[i]->_yPos = 2.f;
+        _monsters[i]->objSpeed = 0.05f;
+        _monsters[i]->HP = 50.f;
     }
 
 #pragma region 수동위치정해주기 ㄱ-
