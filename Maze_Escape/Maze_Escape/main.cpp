@@ -175,6 +175,7 @@ vector<glm::vec2> Texture[26];
 
 bool isAttack = false;
 bool isDamaged = false;
+bool JumpCheck = false;
 
 glm::vec3 objC = glm::vec3(0, 0, 0);
 glm::vec3 cameraPos = glm::vec3(1.0f, 3.0f, 10.0f);
@@ -283,8 +284,46 @@ void timer(int value)
     }
 
     for (int i = 0; i < 10; ++i) {
-        if (!CrashCheck(_PlayerAABB, _monsters[i]->_AABB))
-            cout << "monster " << i << " 와 플레이어 충돌" << endl;
+        if (!CrashCheck(_PlayerAABB, _monsters[i]->_AABB)) {
+            if (!isDamaged)
+                isDamaged = true;
+        }
+    }
+
+    if (isDamaged) {
+        if (TransList.T_Bodyy < 0) {
+            JumpCheck = false;
+            isDamaged = false;
+            TransList.T_Bodyy = 0.0f;
+        }
+
+        if (TransList.T_Bodyy >= 2.5f)
+            JumpCheck = true;
+        
+        if (!JumpCheck) {
+            TransList.T_Bodyy += 0.1f;
+            switch (_dir)
+            {
+            case PLAYERDIR::LEFT:
+                TransList.T_Bodyx -= 0.1f;
+                break;
+            case PLAYERDIR::RIGHT:
+                TransList.T_Bodyx += 0.1f;
+                break;
+            case PLAYERDIR::UP:
+                TransList.T_Bodyz -= 0.1f;
+                break;
+            case PLAYERDIR::DOWN:
+                TransList.T_Bodyz += 0.1f;
+                break;
+            case END:
+                break;
+            default:
+                break;
+            }
+        }
+        else
+            TransList.T_Bodyy -= 0.1f;
     }
 
     glutPostRedisplay();
