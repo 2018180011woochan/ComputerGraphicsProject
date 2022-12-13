@@ -84,6 +84,7 @@ struct Angle
     float angle = 0.0f;
     float anglex = 0.0f;
     float angley = 0.0f;
+    float ArmRot = 0.0f;
 
     float SwordAttackAngle = 0.0f;
     float GunAngle = 0.0f;
@@ -184,6 +185,7 @@ vector<glm::vec2> Texture[26];
 bool isAttack = false;
 bool isDamaged = false;
 bool JumpCheck = false;
+bool ArmCheck = false;
 
 glm::vec3 objC = glm::vec3(0, 0, 0);
 glm::vec3 cameraPos = glm::vec3(1.0f, 3.0f, 10.0f);
@@ -191,7 +193,7 @@ glm::vec3 lightPos = glm::vec3(0, 3.0f, 2.5f);
 glm::vec3 lightColor = glm::vec3(1.4f, 1.3f, 1.3f);
 glm::vec3 Cameraposdir = glm::vec3(0.0f);
 glm::vec3 Cameradir = glm::vec3(0.0f);
-float Movevalue = 0.8f;
+float Movevalue = 0.4f;
 
 CGameObject* _monsters[10];
 CGameObject* _JumpingMonsters[10];
@@ -199,7 +201,8 @@ CGameObject* _effect[20];
 
 int main(int argc, char** argv)
 {
-    //PlaySound(TEXT("backsound.wav"), NULL, SND_ASYNC | SND_ALIAS);
+    //PlaySound(TEXT("mybgm.wav"), NULL, SND_ASYNC | SND_ALIAS);
+    //PlaySound(TEXT("back.wav"), NULL, SND_ASYNC | SND_ALIAS);
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH);
     glutInitWindowPosition(0, 0);
@@ -227,6 +230,16 @@ void timer(int value)
 {
     //cout << "x : " << TransList.T_Bodyx << ", z : " << TransList.T_Bodyz << endl;
 
+    if (AngleList.ArmRot > 220.f)
+        ArmCheck = false;
+    if (AngleList.ArmRot < 130.f)
+        ArmCheck = true;
+
+    if (ArmCheck)
+        AngleList.ArmRot += 3;
+    else
+        AngleList.ArmRot -= 3;
+
     if (_dir == PLAYERDIR::UP)
         AngleList.angley = 0.f;
     if (_dir == PLAYERDIR::DOWN)
@@ -247,11 +260,23 @@ void timer(int value)
             SwordRange.minZ = TransList.T_Bodyz - 2.f;
 
             for (int i = 0; i < 10; ++i) {
-                if (!CrashCheck(SwordRange, _monsters[i]->_AABB)) 
+                if (!CrashCheck(SwordRange, _monsters[i]->_AABB)) {
                     _monsters[i]->HP -= 2.f;
+                    for (int k = 0; k < 20; ++k) {
+                        _effect[k]->_xPos = _monsters[i]->_xPos;
+                        _effect[k]->_yPos = _monsters[i]->_yPos;
+                        _effect[k]->_zPos = _monsters[i]->_zPos;
+                    }
+                }
 
-                if (!CrashCheck(SwordRange, _JumpingMonsters[i]->_AABB))
+                if (!CrashCheck(SwordRange, _JumpingMonsters[i]->_AABB)) {
                     _JumpingMonsters[i]->HP -= 2.f;
+                    for (int k = 0; k < 20; ++k) {
+                        _effect[k]->_xPos = _JumpingMonsters[i]->_xPos;
+                        _effect[k]->_yPos = _JumpingMonsters[i]->_yPos;
+                        _effect[k]->_zPos = _JumpingMonsters[i]->_zPos;
+                    }
+                }
                 
             }
         }
@@ -291,16 +316,20 @@ void timer(int value)
             if (!CrashCheck(BulletLocation[i]._bulletAABB, _monsters[j]->_AABB)) {
                 _monsters[j]->HP -= 2.f;
                 for (int k = 0; k < 20; ++k) {
-                    //if (!_effect[j]->isDead) {
-                        _effect[k]->_xPos = _monsters[j]->_xPos;
-                        _effect[k]->_yPos = _monsters[j]->_yPos;
-                        _effect[k]->_zPos = _monsters[j]->_zPos;
-                   // }
+                    _effect[k]->_xPos = _monsters[j]->_xPos;
+                    _effect[k]->_yPos = _monsters[j]->_yPos;
+                    _effect[k]->_zPos = _monsters[j]->_zPos;
                 }
             }
 
-            if (!CrashCheck(BulletLocation[i]._bulletAABB, _JumpingMonsters[j]->_AABB))
+            if (!CrashCheck(BulletLocation[i]._bulletAABB, _JumpingMonsters[j]->_AABB)) {
                 _JumpingMonsters[j]->HP -= 2.f;
+                for (int k = 0; k < 20; ++k) {
+                    _effect[k]->_xPos = _JumpingMonsters[j]->_xPos;
+                    _effect[k]->_yPos = _JumpingMonsters[j]->_yPos;
+                    _effect[k]->_zPos = _JumpingMonsters[j]->_zPos;
+                }
+            }
 
             
         }
@@ -864,6 +893,7 @@ void drawscene()
     if (_dir == PLAYERDIR::LEFT || _dir == PLAYERDIR::RIGHT)
         playerTrasMatrix = glm::translate(playerTrasMatrix, glm::vec3(TransList.T_Bodyx, TransList.T_Bodyy + 2.0f, TransList.T_Bodyz + 0.5f));
     playerTrasMatrix = glm::rotate(playerTrasMatrix, glm::radians(AngleList.angley), glm::vec3(0.0f, 1.0f, 0.0f));
+    playerTrasMatrix = glm::rotate(playerTrasMatrix, glm::radians(-AngleList.ArmRot), glm::vec3(1.0f, 0.0f, 0.0f));
     playerTrasMatrix = glm::scale(playerTrasMatrix, glm::vec3(0.4f, 0.7f, 0.4f));
     playerTransMatrixLocation = glGetUniformLocation(shaderID, "modelTransform");
     glUniformMatrix4fv(playerTransMatrixLocation, 1, GL_FALSE, glm::value_ptr(playerTrasMatrix));
@@ -884,6 +914,7 @@ void drawscene()
     if (_dir == PLAYERDIR::LEFT || _dir == PLAYERDIR::RIGHT)
         playerTrasMatrix = glm::translate(playerTrasMatrix, glm::vec3(TransList.T_Bodyx, TransList.T_Bodyy + 2.0f, TransList.T_Bodyz - 0.5f));
     playerTrasMatrix = glm::rotate(playerTrasMatrix, glm::radians(AngleList.angley), glm::vec3(0.0f, 1.0f, 0.0f));
+    playerTrasMatrix = glm::rotate(playerTrasMatrix, glm::radians(AngleList.ArmRot), glm::vec3(1.0f, 0.0f, 0.0f));
     playerTrasMatrix = glm::scale(playerTrasMatrix, glm::vec3(0.4f, 0.7f, 0.4f));
     playerTransMatrixLocation = glGetUniformLocation(shaderID, "modelTransform");
     glUniformMatrix4fv(playerTransMatrixLocation, 1, GL_FALSE, glm::value_ptr(playerTrasMatrix));
@@ -904,6 +935,7 @@ void drawscene()
     if (_dir == PLAYERDIR::LEFT || _dir == PLAYERDIR::RIGHT)
         playerTrasMatrix = glm::translate(playerTrasMatrix, glm::vec3(TransList.T_Bodyx, TransList.T_Bodyy + 1.0f, TransList.T_Bodyz - 0.35f));
     playerTrasMatrix = glm::rotate(playerTrasMatrix, glm::radians(AngleList.angley), glm::vec3(0.0f, 1.0f, 0.0f));
+    playerTrasMatrix = glm::rotate(playerTrasMatrix, glm::radians(-AngleList.ArmRot), glm::vec3(1.0f, 0.0f, 0.0f));
     playerTrasMatrix = glm::scale(playerTrasMatrix, glm::vec3(0.3f, 0.8f, 0.3f));
     playerTransMatrixLocation = glGetUniformLocation(shaderID, "modelTransform");
     glUniformMatrix4fv(playerTransMatrixLocation, 1, GL_FALSE, glm::value_ptr(playerTrasMatrix));
@@ -924,6 +956,7 @@ void drawscene()
     if (_dir == PLAYERDIR::LEFT || _dir == PLAYERDIR::RIGHT)
         playerTrasMatrix = glm::translate(playerTrasMatrix, glm::vec3(TransList.T_Bodyx, TransList.T_Bodyy + 1.0f, TransList.T_Bodyz + 0.35f));
     playerTrasMatrix = glm::rotate(playerTrasMatrix, glm::radians(AngleList.angley), glm::vec3(0.0f, 1.0f, 0.0f));
+    playerTrasMatrix = glm::rotate(playerTrasMatrix, glm::radians(AngleList.ArmRot), glm::vec3(1.0f, 0.0f, 0.0f));
     playerTrasMatrix = glm::scale(playerTrasMatrix, glm::vec3(0.3f, 0.8f, 0.3f));
     playerTransMatrixLocation = glGetUniformLocation(shaderID, "modelTransform");
     glUniformMatrix4fv(playerTransMatrixLocation, 1, GL_FALSE, glm::value_ptr(playerTrasMatrix));
