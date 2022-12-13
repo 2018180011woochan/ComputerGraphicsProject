@@ -32,6 +32,9 @@
     <Filter Include="소스 파일\00.GameObject\01.Monster\00.FixMonster">
       <UniqueIdentifier>{625368c6-6a61-4e3c-88f1-d50fc5a95d2c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="소스 파일\00.GameObject\01.Monster\01.JumpingMonster">
+      <UniqueIdentifier>{40477d6f-05c2-4ffa-ae4d-007df8b298f2}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="fragment.glsl">

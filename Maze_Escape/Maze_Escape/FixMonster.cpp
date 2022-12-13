@@ -20,7 +20,7 @@ void FixMonster::Update(float _targetx, float _targetz)
 
 	float dis = abs(_targetx - _xPos) + abs(_targetz - _zPos);
 
-	if (dis < 20.f && dis > 5.f) {
+	if (dis < 20.f && dis > 2.f) {
 		if (_targetx > _xPos) 
 			_xPos += objSpeed;
 		else
