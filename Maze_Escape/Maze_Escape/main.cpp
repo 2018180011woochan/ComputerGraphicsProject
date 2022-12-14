@@ -20,6 +20,8 @@
 
 #include "FixMonster.h"
 #include "JumpingMonster.h"
+#include "BossMonster.h"
+#include "BossAttack.h"
 #include "Effect.h"
 
 #define STB_IMAGE_IMPLEMENTATION
@@ -45,7 +47,6 @@ void MySpecialKey(int Key, int X, int Y);
 void timer(int value);
 void ObjList();
 void drawscene();
-
 
 int WIDTH = 0;
 int HEIGHT = 0;
@@ -198,6 +199,8 @@ float Movevalue = 0.4f;
 CGameObject* _monsters[10];
 CGameObject* _JumpingMonsters[10];
 CGameObject* _effect[20];
+CGameObject* _Boss;
+CGameObject* _BossAttack[20];
 
 int main(int argc, char** argv)
 {
@@ -228,7 +231,7 @@ int main(int argc, char** argv)
 
 void timer(int value)
 {
-    //cout << "x : " << TransList.T_Bodyx << ", z : " << TransList.T_Bodyz << endl;
+    cout << "x : " << TransList.T_Bodyx << ", z : " << TransList.T_Bodyz << endl;
 
     if (AngleList.ArmRot > 220.f)
         ArmCheck = false;
@@ -331,6 +334,14 @@ void timer(int value)
                 }
             }
 
+            if (!CrashCheck(BulletLocation[i]._bulletAABB, _Boss->_AABB)) {
+                _Boss->HP -= 2.f;
+                for (int k = 0; k < 20; ++k) {
+                    _effect[k]->_xPos = _Boss->_xPos;
+                    _effect[k]->_yPos = _Boss->_yPos;
+                    _effect[k]->_zPos = _Boss->_zPos - 10.f;
+                }
+            }
             
         }
     }
@@ -342,6 +353,11 @@ void timer(int value)
     for (int i = 0; i < 20; ++i) {
         static_cast<Effect*>(_effect[i])->Update(TransList.T_Bodyx, TransList.T_Bodyy, TransList.T_Bodyz);
     }
+    for (int i = 0; i < 20; ++i) {
+        static_cast<BossAttack*>(_BossAttack[i])->Update(TransList.T_Bodyx, TransList.T_Bodyz);
+    }
+
+    static_cast<BossMonster*>(_Boss)->Update(TransList.T_Bodyx, TransList.T_Bodyz);
 
     for (int i = 0; i < 10; ++i) {
         if (!CrashCheck(_PlayerAABB, _monsters[i]->_AABB)) {
@@ -616,6 +632,21 @@ void InitBuffer()
         _effect[i]->R_x = uid(dr);
         _effect[i]->R_y = uid(dr);
         _effect[i]->R_z = uid(dr);
+    }
+
+    _Boss = new BossMonster();
+    _Boss->_xPos = 97.f;
+    _Boss->_yPos = 2.f;
+    _Boss->_zPos = 146.f;
+    _Boss->HP = 2000.f;
+
+    for (int i = 0; i < 20; ++i) {
+        _BossAttack[i] = new BossAttack(i);
+        _BossAttack[i]->_xPos = 97.f;
+        _BossAttack[i]->_yPos = 2.f;
+        _BossAttack[i]->_zPos = 110.f + (3.f * i);
+        static_cast<BossAttack*>(_BossAttack[i])->RemoveIDX = 10;
+       
     }
 
 #pragma region 수동위치정해주기 ㄱ-
@@ -1212,6 +1243,54 @@ void drawscene()
         glDrawArrays(GL_TRIANGLES, 0, Vertex[1].size());
     }
 #pragma endregion Effect
+
+#pragma region Bossmosnter
+    glBindVertexArray(VAO[1]);
+    unsigned int BulletBlendCheck = glGetUniformLocation(shaderID, "Blendcheck");
+    glUniform1i(BulletBlendCheck, 2);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, texture[5]);
+    glm::mat4 BulletTrasMatrix = glm::mat4(1.0f);
+    //BulletTrasMatrix = glm::translate(BulletTrasMatrix, glm::vec3(0.f, 2.f, 20.f));
+    BulletTrasMatrix = glm::translate(BulletTrasMatrix, glm::vec3(_Boss->_xPos, _Boss->_yPos, _Boss->_zPos));
+    _Boss->_AABB.maxX = _Boss->_xPos + 20.f;
+    _Boss->_AABB.minX = _Boss->_xPos - 20.f;
+    _Boss->_AABB.maxZ = _Boss->_zPos + 20.f;
+    _Boss->_AABB.minZ = _Boss->_zPos - 20.f;
+
+    BulletTrasMatrix = glm::scale(BulletTrasMatrix, glm::vec3(20, 20, 20));
+    unsigned int BulletTransMatrixLocation = glGetUniformLocation(shaderID, "modelTransform");
+    glUniformMatrix4fv(BulletTransMatrixLocation, 1, GL_FALSE, glm::value_ptr(BulletTrasMatrix));
+    glm::mat4 BulletNormalMatrix = glm::mat4(1.0f);
+    unsigned int BulletNormalMatrixLocation = glGetUniformLocation(shaderID, "normalTransform");
+    glUniformMatrix4fv(BulletNormalMatrixLocation, 1, GL_FALSE, glm::value_ptr(BulletNormalMatrix));
+    glDrawArrays(GL_TRIANGLES, 0, Vertex[1].size());
+#pragma endregion Bossmonster
+
+#pragma region BossAttack
+    for (int i = 0; i < 20; ++i) {
+        glBindVertexArray(VAO[1]);
+        unsigned int BulletBlendCheck = glGetUniformLocation(shaderID, "Blendcheck");
+        glUniform1i(BulletBlendCheck, 2);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, texture[2]);
+        glm::mat4 BulletTrasMatrix = glm::mat4(1.0f);
+        //BulletTrasMatrix = glm::translate(BulletTrasMatrix, glm::vec3(0.f, 2.f, 20.f));
+        BulletTrasMatrix = glm::translate(BulletTrasMatrix, glm::vec3(_BossAttack[i]->_xPos, _BossAttack[i]->_yPos, _BossAttack[i]->_zPos));
+        _BossAttack[i]->_AABB.maxX = _BossAttack[i]->_xPos + 1.f;
+        _BossAttack[i]->_AABB.minX = _BossAttack[i]->_xPos - 1.f;
+        _BossAttack[i]->_AABB.maxZ = _BossAttack[i]->_zPos + 1.f;
+        _BossAttack[i]->_AABB.minZ = _BossAttack[i]->_zPos - 1.f;
+
+        BulletTrasMatrix = glm::scale(BulletTrasMatrix, glm::vec3(2, 2, 2));
+        unsigned int BulletTransMatrixLocation = glGetUniformLocation(shaderID, "modelTransform");
+        glUniformMatrix4fv(BulletTransMatrixLocation, 1, GL_FALSE, glm::value_ptr(BulletTrasMatrix));
+        glm::mat4 BulletNormalMatrix = glm::mat4(1.0f);
+        unsigned int BulletNormalMatrixLocation = glGetUniformLocation(shaderID, "normalTransform");
+        glUniformMatrix4fv(BulletNormalMatrixLocation, 1, GL_FALSE, glm::value_ptr(BulletNormalMatrix));
+        glDrawArrays(GL_TRIANGLES, 0, Vertex[1].size());
+    }
+#pragma endregion BossAttack
 }
 
 

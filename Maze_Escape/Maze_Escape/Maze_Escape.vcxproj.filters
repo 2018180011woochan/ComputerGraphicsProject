@@ -38,6 +38,12 @@
     <Filter Include="소스 파일\00.GameObject\02.Effect">
       <UniqueIdentifier>{10209b65-3ee6-4ada-900a-3d57408acbb4}</UniqueIdentifier>
     </Filter>
+    <Filter Include="소스 파일\00.GameObject\01.Monster\02. BossMonster">
+      <UniqueIdentifier>{417153bc-3502-41b6-8a45-d70a9276033d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\00.GameObject\01.Monster\03.BossAttack">
+      <UniqueIdentifier>{3ce646ee-a7a5-4e86-a167-05f9f586de87}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="Shader\fragmentBlendShader.glsl">
@@ -81,6 +87,12 @@
     <ClCompile Include="Effect.cpp">
       <Filter>소스 파일\00.GameObject\02.Effect</Filter>
     </ClCompile>
+    <ClCompile Include="BossMonster.cpp">
+      <Filter>소스 파일\00.GameObject\01.Monster\02. BossMonster</Filter>
+    </ClCompile>
+    <ClCompile Include="BossAttack.cpp">
+      <Filter>소스 파일\00.GameObject\01.Monster\03.BossAttack</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="readobj.h">
@@ -115,6 +127,12 @@
     </ClInclude>
     <ClInclude Include="Effect.h">
       <Filter>소스 파일\00.GameObject\02.Effect</Filter>
+    </ClInclude>
+    <ClInclude Include="BossMonster.h">
+      <Filter>소스 파일\00.GameObject\01.Monster\02. BossMonster</Filter>
+    </ClInclude>
+    <ClInclude Include="BossAttack.h">
+      <Filter>소스 파일\00.GameObject\01.Monster\03.BossAttack</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
