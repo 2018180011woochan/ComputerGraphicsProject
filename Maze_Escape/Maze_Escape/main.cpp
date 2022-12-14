@@ -220,8 +220,7 @@ CGameObject* _backEffect[400];
 
 int main(int argc, char** argv)
 {
-    //PlaySound(TEXT("mybgm.wav"), NULL, SND_ASYNC | SND_ALIAS);
-    //PlaySound(TEXT("back.wav"), NULL, SND_ASYNC | SND_ALIAS);
+    PlaySound(TEXT("backsound.wav"), NULL, SND_ASYNC | SND_ALIAS);
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH);
     glutInitWindowPosition(0, 0);
@@ -674,7 +673,7 @@ void InitBuffer()
     _Boss->_xPos = 97.f;
     _Boss->_yPos = 2.f;
     _Boss->_zPos = 146.f;
-    _Boss->HP = 2000.f;
+    _Boss->HP = 20000.f;
 
     for (int i = 0; i < 20; ++i) {
         _BossAttack[i] = new BossAttack(i);
