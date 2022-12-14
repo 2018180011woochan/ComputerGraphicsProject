@@ -16,8 +16,14 @@ void BossAttack::Update()
 {
 }
 
-void BossAttack::Update(float _targetx, float _targetz)
+void BossAttack::Update(bool _isClear, bool _isBossDead)
 {
+	if (!_isClear)
+		return;
+
+	if (_isBossDead)
+		return;
+
 	if (MonsterNum == RemoveIDX) {
 		_zPos = -99.f;
 	}

@@ -44,6 +44,9 @@
     <Filter Include="소스 파일\00.GameObject\01.Monster\03.BossAttack">
       <UniqueIdentifier>{3ce646ee-a7a5-4e86-a167-05f9f586de87}</UniqueIdentifier>
     </Filter>
+    <Filter Include="소스 파일\00.GameObject\02.Effect\BackEffect">
+      <UniqueIdentifier>{5d66f1e1-47ee-43c5-9a39-258b4ae1cb3d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="Shader\fragmentBlendShader.glsl">
@@ -93,6 +96,9 @@
     <ClCompile Include="BossAttack.cpp">
       <Filter>소스 파일\00.GameObject\01.Monster\03.BossAttack</Filter>
     </ClCompile>
+    <ClCompile Include="BackEffect.cpp">
+      <Filter>소스 파일\00.GameObject\02.Effect\BackEffect</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="readobj.h">
@@ -133,6 +139,9 @@
     </ClInclude>
     <ClInclude Include="BossAttack.h">
       <Filter>소스 파일\00.GameObject\01.Monster\03.BossAttack</Filter>
+    </ClInclude>
+    <ClInclude Include="BackEffect.h">
+      <Filter>소스 파일\00.GameObject\02.Effect\BackEffect</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -10,7 +10,7 @@ public:
 public:
 	virtual void Initialize();
 	virtual void Update();
-	virtual void Update(float _targetx, float _targetz);
+	virtual void Update(bool _isClear, bool _isBossDead);
 	virtual void Render();
 	virtual void Release();
 

@@ -139,6 +139,7 @@
     <None Include="Shader\VertexTextureShader.glsl" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="BackEffect.cpp" />
     <ClCompile Include="BossAttack.cpp" />
     <ClCompile Include="BossMonster.cpp" />
     <ClCompile Include="CGameObject.cpp" />
@@ -155,6 +156,7 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="BackEffect.h" />
     <ClInclude Include="BossAttack.h" />
     <ClInclude Include="BossMonster.h" />
     <ClInclude Include="CGameObject.h" />
