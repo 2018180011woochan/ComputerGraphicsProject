@@ -75,7 +75,6 @@ AABB _goalAABB;
 
 bool CrashCheck(AABB pAABB1, AABB pAABB2);
 
-//bullet
 struct Bullet {
     float x;
     float y;
@@ -112,81 +111,19 @@ struct Angle
 
 }AngleList;
 
-//scale
 struct Scale
 {
     float X = 0.0f;
     float Y = 4.5f;
     float Z = 6.5f;
-    //-------------
-    float x = 2.0f;
-    float y = 2.0f;
-    float z = 2.0f;
-    //-------------
-    float Mx = 0.0f;
-    float My = 0.0f;
-    float Mz = 0.0f;
-    //--------------
-    float ALx = 0.1f;
-    float ALy = 0.3f;
-    float ALz = 0.1f;
-    //---------------
-    float TSy = 0.6f;
-    //---------------
-    float Doorx = 6.0f;
-    //---------------
-    float PullScaleRx[3] = { 6.0f,6.0f,6.0f };
-    float PullScaleRz = 2.0f;
-    float PullScaleRy = 2.0f;
-    //------------------
-    float PullScaleLx[3] = { 6.0f,6.0f,6.0f };
-    float PullScaleLz = 2.0f;
-    float PullScaleLy = 2.0f;
 }Scalepos;
 
-//trans
 struct Transration
 {
-    float T_x = 0.0f;
-    float T_y = 0.8f;
-    float T_z = 0.0f;
-    //---------------
-    float T_StageX = 0.0f;
-    float T_StageY = 0.0f;
-    float T_StageZ = 0.0f;
-    //----------------
-    float T_Stage2X = 0.0f;
-    float T_Stage2Y = 0.0f;
-    float T_Stage2Z = 0.0f;
-    //------------------
-    float T_Stage2ZA[3] = { 35.0f,50.0f,65.0f };
-    //----------------
-    float T_Trapx = 0.0f;
-    float T_Trapy = 0.6f;
-    float T_Trapz = 0.0f;
-    //-----------------
-    float T_Trapx2 = 16.0f;
-    float T_Trapy2 = 1.5f;
-    float T_Trapz2 = 20.0f;
-    //---------------
     float T_Bodyx = 0.0f;
     float T_Bodyy = 0.9f;
     float T_Bodyz = -2.0f;
-    //--------------------
-    float T_Cpaex = 0.0f;
-    float T_Cpaey = 0.6f;
-    float T_Cpaez = -2.0f;
-    //-------------------
-    float T_Eyex = 0.0f;
-    float T_Eyey = 0.9f;
-    float T_Eyez = -2.0f;
-    //----------------
-    float T_ArmLegx = 0.0f;
-    float T_ArmLegy = 0.77f;
-    float T_ArmLegz = 0.0f;
-    //-------------------
-    float DoorxL = 1.8f;
-    float DoorxR = -1.8f;
+
 
 }TransList;
 
@@ -1374,7 +1311,6 @@ void drawscene()
 
    
 }
-
 
 void initTexture()
 {
