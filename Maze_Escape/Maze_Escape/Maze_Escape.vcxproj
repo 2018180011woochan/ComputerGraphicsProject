@@ -133,15 +133,21 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <None Include="fragment.glsl" />
+    <None Include="Shader\fragment.glsl" />
     <None Include="Shader\fragmentBlendShader.glsl" />
+    <None Include="Shader\vertex.glsl" />
     <None Include="Shader\VertexTextureShader.glsl" />
-    <None Include="vertex.glsl" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="BackEffect.cpp" />
+    <ClCompile Include="BossAttack.cpp" />
+    <ClCompile Include="BossMonster.cpp" />
     <ClCompile Include="CGameObject.cpp" />
     <ClCompile Include="CPlayer.cpp" />
+    <ClCompile Include="Effect.cpp" />
     <ClCompile Include="filetobuf.cpp" />
+    <ClCompile Include="FixMonster.cpp" />
+    <ClCompile Include="JumpingMonster.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="readobj.cpp" />
     <ClCompile Include="stdafx.cpp">
@@ -150,9 +156,15 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="BackEffect.h" />
+    <ClInclude Include="BossAttack.h" />
+    <ClInclude Include="BossMonster.h" />
     <ClInclude Include="CGameObject.h" />
     <ClInclude Include="CPlayer.h" />
+    <ClInclude Include="Effect.h" />
     <ClInclude Include="filetobuf.h" />
+    <ClInclude Include="FixMonster.h" />
+    <ClInclude Include="JumpingMonster.h" />
     <ClInclude Include="MakeShader.h" />
     <ClInclude Include="readobj.h" />
     <ClInclude Include="stb_image.h" />

@@ -26,18 +26,39 @@
     <Filter Include="FileToOut">
       <UniqueIdentifier>{32877674-3599-410c-90fb-8b16a63d9c9b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="소스 파일\00.GameObject\01.Monster">
+      <UniqueIdentifier>{4c9d2fa5-f47c-43ab-bd66-6ae52bc48b4a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\00.GameObject\01.Monster\00.FixMonster">
+      <UniqueIdentifier>{625368c6-6a61-4e3c-88f1-d50fc5a95d2c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\00.GameObject\01.Monster\01.JumpingMonster">
+      <UniqueIdentifier>{40477d6f-05c2-4ffa-ae4d-007df8b298f2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\00.GameObject\02.Effect">
+      <UniqueIdentifier>{10209b65-3ee6-4ada-900a-3d57408acbb4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\00.GameObject\01.Monster\02. BossMonster">
+      <UniqueIdentifier>{417153bc-3502-41b6-8a45-d70a9276033d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\00.GameObject\01.Monster\03.BossAttack">
+      <UniqueIdentifier>{3ce646ee-a7a5-4e86-a167-05f9f586de87}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\00.GameObject\02.Effect\BackEffect">
+      <UniqueIdentifier>{5d66f1e1-47ee-43c5-9a39-258b4ae1cb3d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <None Include="fragment.glsl">
-      <Filter>Shader</Filter>
-    </None>
-    <None Include="vertex.glsl">
-      <Filter>Shader</Filter>
-    </None>
     <None Include="Shader\fragmentBlendShader.glsl">
       <Filter>Shader</Filter>
     </None>
     <None Include="Shader\VertexTextureShader.glsl">
+      <Filter>Shader</Filter>
+    </None>
+    <None Include="Shader\fragment.glsl">
+      <Filter>Shader</Filter>
+    </None>
+    <None Include="Shader\vertex.glsl">
       <Filter>Shader</Filter>
     </None>
   </ItemGroup>
@@ -59,6 +80,24 @@
     </ClCompile>
     <ClCompile Include="filetobuf.cpp">
       <Filter>FileToOut</Filter>
+    </ClCompile>
+    <ClCompile Include="FixMonster.cpp">
+      <Filter>소스 파일\00.GameObject\01.Monster\00.FixMonster</Filter>
+    </ClCompile>
+    <ClCompile Include="JumpingMonster.cpp">
+      <Filter>소스 파일\00.GameObject\01.Monster\01.JumpingMonster</Filter>
+    </ClCompile>
+    <ClCompile Include="Effect.cpp">
+      <Filter>소스 파일\00.GameObject\02.Effect</Filter>
+    </ClCompile>
+    <ClCompile Include="BossMonster.cpp">
+      <Filter>소스 파일\00.GameObject\01.Monster\02. BossMonster</Filter>
+    </ClCompile>
+    <ClCompile Include="BossAttack.cpp">
+      <Filter>소스 파일\00.GameObject\01.Monster\03.BossAttack</Filter>
+    </ClCompile>
+    <ClCompile Include="BackEffect.cpp">
+      <Filter>소스 파일\00.GameObject\02.Effect\BackEffect</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -85,6 +124,24 @@
     </ClInclude>
     <ClInclude Include="stb_image.h">
       <Filter>소스 파일\99.Header</Filter>
+    </ClInclude>
+    <ClInclude Include="FixMonster.h">
+      <Filter>소스 파일\00.GameObject\01.Monster\00.FixMonster</Filter>
+    </ClInclude>
+    <ClInclude Include="JumpingMonster.h">
+      <Filter>소스 파일\00.GameObject\01.Monster\01.JumpingMonster</Filter>
+    </ClInclude>
+    <ClInclude Include="Effect.h">
+      <Filter>소스 파일\00.GameObject\02.Effect</Filter>
+    </ClInclude>
+    <ClInclude Include="BossMonster.h">
+      <Filter>소스 파일\00.GameObject\01.Monster\02. BossMonster</Filter>
+    </ClInclude>
+    <ClInclude Include="BossAttack.h">
+      <Filter>소스 파일\00.GameObject\01.Monster\03.BossAttack</Filter>
+    </ClInclude>
+    <ClInclude Include="BackEffect.h">
+      <Filter>소스 파일\00.GameObject\02.Effect\BackEffect</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
